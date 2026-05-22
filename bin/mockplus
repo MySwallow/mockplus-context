@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# mockplus — Mockplus(摹客)设计稿抓取 CLI
+# 详见 ../README.md / ../docs/api-reference.md
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+LIB_DIR="$ROOT_DIR/lib"
+export MOCKPLUS_ROOT_DIR="$ROOT_DIR"
+
+# shellcheck source=../lib/common.sh
+source "$LIB_DIR/common.sh"
+# shellcheck source=../lib/http.sh
+source "$LIB_DIR/http.sh"
+# shellcheck source=../lib/cookie.sh
+source "$LIB_DIR/cookie.sh"
+# shellcheck source=../lib/api.sh
+source "$LIB_DIR/api.sh"
+# shellcheck source=../lib/page.sh
+source "$LIB_DIR/page.sh"
+# shellcheck source=../lib/group.sh
+source "$LIB_DIR/group.sh"
+# shellcheck source=../lib/fetch.sh
+source "$LIB_DIR/fetch.sh"
+
+usage() {
+  cat <<'EOF'
+mockplus — Mockplus(摹客)设计稿抓取 CLI
+
+主命令:
+  mockplus cookie <subcmd> [args]      管理认证 cookie
+  mockplus url <URL>                   解析 URL → APP_ID + TARGET_ID
+  mockplus index <APP_ID> [out_root]   拉项目页面/分组树(_index.json + _pages.json)
+  mockplus tree <APP_ID> [out_root]    树形打印项目层级
+  mockplus page <APP_ID> <PAGE_ID> [out_root]    拉单页:data.json + design.png + assets/
+  mockplus group <APP_ID> <GROUP_ID> [out_root]  批量拉一个分组下所有页面
+  mockplus assets <PAGE_DIR>           只下载某 page 目录的切图
+  mockplus fetch <URL> [out_root]      智能:URL → 自动判断是 page / group / app
+  mockplus help                        显示本帮助
+
+Cookie 子命令(详见 docs/cookie.md):
+  mockplus cookie set [--from-file PATH]    从 stdin/文件 写入 cookie(自动 chmod 600)
+  mockplus cookie test <APP_ID>             调一次 API 验证 cookie 有效
+  mockplus cookie status                    显示路径/权限/设置时间/预估剩余天数
+  mockplus cookie clear                     删除 cookie 文件
+  mockplus cookie path                      打印 cookie 文件路径
+
+环境变量:
+  MOCKPLUS_COOKIE        若设置,优先于文件
+  MOCKPLUS_COOKIE_FILE   覆盖默认文件位置(默认 <repo_root>/config/cookie)
+  MOCKPLUS_OUT_ROOT      默认输出根目录(默认 ./mockplus-cache)
+  MOCKPLUS_DEBUG=1       打印请求详情
+EOF
+}
+
+cmd="${1:-help}"; shift || true
+case "$cmd" in
+  cookie) cookie_main "$@" ;;
+  url)    cmd_url "$@" ;;
+  index)  cmd_index "$@" ;;
+  tree)   cmd_tree "$@" ;;
+  page)   cmd_page "$@" ;;
+  group)  cmd_group "$@" ;;
+  assets) cmd_assets "$@" ;;
+  fetch)  cmd_fetch "$@" ;;
+  help|-h|--help|"") usage ;;
+  *) die "未知命令:$cmd(运行 'mockplus help' 查看)" 2 ;;
+esac

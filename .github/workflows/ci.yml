@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: 仓库校验(bash + shellcheck + smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 装 shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: 显示版本
+        run: |
+          bash --version | head -n1
+          python3 --version
+          shellcheck --version | head -n2
+
+      - name: chmod
+        run: chmod +x bin/mockplus scripts/install scripts/validate.sh tests/smoke.sh
+
+      - name: 跑 validate.sh
+        run: scripts/validate.sh
+
+      - name: 跑 smoke.sh(再单独跑一次确认)
+        run: tests/smoke.sh
+
+  macos-smoke:
+    name: macOS 烟测
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: chmod
+        run: chmod +x bin/mockplus scripts/install scripts/validate.sh tests/smoke.sh
+
+      - name: 跑 validate.sh(无 shellcheck)
+        run: scripts/validate.sh
