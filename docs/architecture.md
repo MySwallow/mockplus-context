@@ -3,11 +3,11 @@
 ## 包结构
 
 ```
-scripts/
+skills/mockplus-context/scripts/
 ├── __init__.py       # 空,package 标识
 ├── mockplus.py       # argparse 主入口,根据 cmd 分派到 _xxx 模块
 ├── _api.py           # Mockplus 私有 API 客户端 + URL 解析 + cache 层
-├── _transform.py     # sketch JSON → 结构化 JSON(spec §5 契约)
+├── _transform.py     # sketch JSON → 结构化 JSON(字段契约见 SKILL.md "## 输出 JSON 速览")
 ├── _assets.py        # 纯 CDN 下载(无 cookie 依赖)
 ├── _cookie.py        # cookie 加载 + 5 个子命令
 ├── _tree.py          # 树形打印(含 group 与 page 嵌套 + 孤儿检测)

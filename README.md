@@ -7,22 +7,24 @@
 ## 仓库布局
 
 ```
-mockplus-context/                  # 仓库根
-├── README.md                      # 本文件(项目级介绍)
-├── CHANGELOG.md
-├── LICENSE
-├── .gitignore
-├── .github/
+mockplus-context/                          # repo root
+├── README.md / CHANGELOG.md / LICENSE     # 项目门面
+├── docs/                                  # 给真人开发者/用户看
+│   ├── architecture.md
+│   └── cookie.md
+├── tests/                                 # 开发者跑 pytest
 └── skills/
-    └── mockplus-context/          # skill 自包含
-        ├── SKILL.md               # LLM 入口(progressive disclosure)
-        ├── scripts/               # Python CLI
-        ├── docs/                  # 进阶参考文档
-        ├── tests/                 # pytest + fixtures
-        └── config/                # 运行时(cookie,gitignored)
+    └── mockplus-context/                  # skill 自包含 - LLM 直接消费
+        ├── SKILL.md                       # LLM 入口
+        ├── scripts/                       # Python CLI
+        ├── references/                    # LLM 按需深读
+        │   ├── api-reference.md
+        │   ├── examples.md
+        │   └── troubleshooting.md
+        └── config/                        # 运行时 cookie(gitignored)
 ```
 
-LLM 主要消费 `skills/mockplus-context/SKILL.md`,其余按需深入。
+设计原则:`skills/mockplus-context/` 下的所有内容都是 **LLM runtime 直接消费的**——SKILL.md 入口、scripts 是 CLI、references 是 LLM 按需触发的深度参考、config 是 cookie 运行时位置。给真人看的(架构详解、cookie 抓取流程)在 repo root 的 `docs/`。
 
 ## 能力
 
@@ -71,6 +73,8 @@ mockplus download-assets \
   --local-path ./assets
 ```
 
+cookie 怎么从浏览器抓取,详见 `docs/cookie.md`。
+
 ## 命令一览
 
 | 命令 | 说明 |
@@ -85,7 +89,7 @@ mockplus download-assets \
 | `mockplus cookie clear` | 删 cookie |
 | `mockplus cookie path` | 打印 cookie 路径 |
 
-详见 `skills/mockplus-context/docs/api-reference.md`。
+命令完整签名见 `skills/mockplus-context/references/api-reference.md`。
 
 ## 环境变量
 
@@ -95,21 +99,20 @@ mockplus download-assets \
 | `MOCKPLUS_COOKIE_FILE` | `skills/mockplus-context/config/cookie` | 覆盖 cookie 文件位置 |
 | `MOCKPLUS_OUT_ROOT` | `~/.cache/mockplus-context` | API 响应 cache 根 |
 
-## 文档
+## 文档导航
 
-| 文档 | 内容 |
-|---|---|
-| `skills/mockplus-context/SKILL.md` | LLM 入口(给 Claude / Cursor 等读) |
-| `skills/mockplus-context/docs/api-reference.md` | 命令完整签名 |
-| `skills/mockplus-context/docs/architecture.md` | 模块划分与字段语义 |
-| `skills/mockplus-context/docs/cookie.md` | cookie 获取 / 配置 |
-| `skills/mockplus-context/docs/examples.md` | 端到端使用示例 |
-| `skills/mockplus-context/docs/troubleshooting.md` | 故障排查 |
+| 文档 | 受众 | 内容 |
+|---|---|---|
+| `skills/mockplus-context/SKILL.md` | LLM | skill 入口 |
+| `skills/mockplus-context/references/api-reference.md` | LLM | 命令完整签名 |
+| `skills/mockplus-context/references/examples.md` | LLM | 端到端调用样例 |
+| `skills/mockplus-context/references/troubleshooting.md` | LLM | 错误处理建议 |
+| `docs/architecture.md` | 开发者 | 模块拆分 / 关键设计决策 |
+| `docs/cookie.md` | 真人用户 | cookie 获取与配置详解 |
 
 ## 开发 / 测试
 
 ```bash
-cd skills/mockplus-context
 python3 -m pip install --user -r tests/requirements.txt
 python3 -m pytest tests/ -v
 ```

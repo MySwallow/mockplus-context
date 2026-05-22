@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.4.0 — 2026-05-22
+
+**skill 目录纯化:只保留 LLM runtime 直接消费的内容。**
+
+### Changed
+- **Breaking**: skill 内部目录精简,`skills/mockplus-context/` 下只保留 LLM 直接消费的资产:
+  - `SKILL.md` — LLM 入口
+  - `scripts/` — Python CLI
+  - `references/` — LLM 按需深读的进阶参考(api / examples / troubleshooting)
+  - `config/` — 运行时 cookie(gitignored)
+- 开发期产物移出 skill:
+  - `tests/` 移到 repo root(开发者跑 pytest)
+  - `docs/architecture.md` 移到 repo root(给开发者读懂模块拆分)
+  - `docs/cookie.md` 移到 repo root(给真人用户配 cookie)
+- SKILL.md 改写遵循 progressive disclosure:删 "## 资源指引" 索引清单,改为正文内**按需就地**指引(`references/api-reference.md` / `examples.md` / `troubleshooting.md`)
+- `references/` 内文件互引用从 `docs/xxx.md` 改为同级文件名
+
+### Removed
+- `skills/mockplus-context/config/README.md`(SKILL.md 已覆盖 cookie 管理说明)
+
+### Migration
+- pytest 跑法:`python3 -m pytest tests/` (从 repo root)
+- 命令路径不变:`python3 skills/mockplus-context/scripts/mockplus.py <cmd>`
+
 ## v0.3.0 — 2026-05-22
 
 **仓库结构标准化 + 文案聚焦清理。**

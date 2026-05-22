@@ -1,6 +1,6 @@
 # Troubleshooting
 
-按"看到什么现象 → 怎么修"组织。退出码完整列表见 `docs/api-reference.md`。
+按"看到什么现象 → 怎么修"组织。退出码完整列表见 `api-reference.md`。
 
 ## Cookie 类
 
@@ -149,7 +149,7 @@ apt-get install python3
 
 ### `ImportError: cannot import name '_xxx'`
 
-确保从仓库根目录调用 `python3 scripts/mockplus.py`,或把 `scripts/` 加入 `PYTHONPATH`。
+确保 cwd 在 skill 目录(`skills/mockplus-context/`)调用 `python3 scripts/mockplus.py`,或把 skill 内 `scripts/` 加入 `PYTHONPATH`。
 
 ---
 

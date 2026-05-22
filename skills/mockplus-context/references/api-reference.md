@@ -33,7 +33,7 @@
 - `<URL>`: 完整 Mockplus develop 页 URL 或 `<APP_ID>:<PAGE_ID>` 短形式
 - `--refresh`: 跳过 cache,强制重新拉
 
-stdout: 结构化 JSON(详见 `docs/specs/2026-05-22-skill-redesign-design.md` §5)。
+stdout: 结构化 JSON(字段速览见 `../SKILL.md` "## 输出 JSON 速览" 章节)。
 
 ---
 

@@ -1,4 +1,4 @@
-"""sketch JSON → 结构化 JSON。详见 docs/specs/2026-05-22-skill-redesign-design.md §5。"""
+"""sketch JSON → 结构化 JSON。字段契约见 SKILL.md "## 输出 JSON 速览" 章节。"""
 import hashlib
 import re
 from typing import Any, Dict, List, Optional, Tuple

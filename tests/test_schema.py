@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skills" / "mockplus-context" / "scripts"))
 from _schema import validate_lite, validate_full
 
 EXPECTED = Path(__file__).parent / "fixtures" / "expected"
