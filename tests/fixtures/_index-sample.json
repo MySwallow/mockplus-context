@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "payload": {
+    "pages": [
+      {
+        "_id": "g-root",
+        "name": "v1",
+        "isGroup": true,
+        "children": [
+          {
+            "_id": "g-sub1",
+            "name": "采购模块",
+            "isGroup": true,
+            "children": [
+              {
+                "_id": "p-001",
+                "name": "申请页",
+                "parentID": "g-sub1",
+                "dataURL": "https://example.com/p001.json",
+                "imageURL": "https://example.com/p001.png",
+                "device": "ios1x",
+                "size": {"width": 375, "height": 812}
+              }
+            ]
+          },
+          {
+            "_id": "p-003",
+            "name": "首页",
+            "parentID": "g-root",
+            "dataURL": "https://example.com/p003.json",
+            "imageURL": "https://example.com/p003.png",
+            "device": "ios1x",
+            "size": {"width": 375, "height": 812}
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,188 +1,47 @@
 # Architecture
 
-## 一张图
+## 包结构
 
 ```
-USER
-  │
-  │  mockplus fetch <URL>
-  ▼
-┌─────────────────────────────────────────────┐
-│  bin/mockplus  (CLI dispatcher)             │
-│  - 加载 lib/*.sh                            │
-│  - 派发到 cmd_* / cookie_*                  │
-└─────────┬───────────────────────────────────┘
-          │
-          │ source 顺序: common → http → cookie → api → page → group → fetch
-          ▼
-┌───────────────────────────────────┐
-│  lib/common.sh                    │  日志 / 错误 / 依赖检查
-│  lib/http.sh                      │  curl_app / curl_cdn 封装
-│  lib/cookie.sh                    │  cookie 生命周期
-│  lib/api.sh                       │  URL 解析 + index 拉取 + 树查询
-│  lib/page.sh                      │  单页 + 切图
-│  lib/group.sh                     │  分组批量(调 page.sh)
-│  lib/fetch.sh                     │  智能分发(URL → page / group)
-└─────────┬─────────────────────────┘
-          │ curl + python3
-          ▼
-┌───────────────────────────────┐    ┌───────────────────────────┐
-│  app.mockplus.cn              │    │  img02.mockplus.cn        │
-│  (Cloudflare + REST API)      │    │  (华为云华东 CDN)         │
-│                               │    │                           │
-│  /api/v1/app/module/<APPID>   │    │  /idoc/.../<hash>.json    │
-│    /design                    │    │  /idoc/sketch/<h>/x.png   │
-│                               │    │  /idoc/sketch/<h>/x.svg   │
-└───────────────────────────────┘    └───────────────────────────┘
-          │                                    │
-          │ JSON: { code, payload.pages[] }    │ raw Sketch JSON / PNG / SVG
-          ▼                                    ▼
-┌─────────────────────────────────────────────┐
-│  ./mockplus-cache/<APPID>/                  │
-│    _index.json         原始 API 响应         │
-│    _pages.json         扁平 pages + groups   │
-│    groups/<GID>/                            │
-│      _meta.json                             │
-│      _page-ids.txt                          │
-│    pages/<PID>/                             │
-│      page-meta.json                         │
-│      data.json         (Sketch 结构)         │
-│      design.png        (整页 @2x)            │
-│      assets-manifest.json                   │
-│      assets/<hash>.png / .svg               │
-└─────────────────────────────────────────────┘
+scripts/
+├── __init__.py       # 空,package 标识
+├── mockplus.py       # argparse 主入口,根据 cmd 分派到 _xxx 模块
+├── _api.py           # Mockplus 私有 API 客户端 + URL 解析 + cache 层
+├── _transform.py     # sketch JSON → 结构化 JSON(spec §5 契约)
+├── _assets.py        # 纯 CDN 下载(无 cookie 依赖)
+├── _cookie.py        # cookie 加载 + 5 个子命令
+├── _tree.py          # 树形打印(含 group 与 page 嵌套 + 孤儿检测)
+├── _schema.py        # 输出 JSON 校验(validate_lite + validate_full)
+└── _explore.py       # 字段侦察辅助(开发用)
 ```
 
-## 模块职责
+每个 `_xxx.py` 暴露一个 `cmd_<name>(args)` 函数给 `mockplus.py` 调用。
 
-| 模块 | 行数 | 职责 | 依赖 |
-|---|---|---|---|
-| `bin/mockplus` | ~55 | CLI dispatch,加载 lib | 全部 lib |
-| `lib/common.sh` | ~20 | `die` / `info` / `debug` / `require_tools` | — |
-| `lib/http.sh` | ~25 | `http_app` / `http_cdn` curl 封装 | common, cookie |
-| `lib/cookie.sh` | ~150 | cookie set/test/status/clear/path/load | common, http(test 用) |
-| `lib/api.sh` | ~120 | URL 解析 / index 拉取 / tree 打印 / 节点类型查询 | common, http |
-| `lib/page.sh` | ~95 | 单页 data.json + design.png + 切图 | common, http, api |
-| `lib/group.sh` | ~70 | 分组批量(调 cmd_page) | common, api, page |
-| `lib/fetch.sh` | ~40 | 智能 URL 分发 | common, api, page, group |
-
-总计 ~575 行 shell + 嵌入的 python3 heredoc。
-
-**为什么 Python 嵌在 shell heredoc 里?** 因为只用标准库(json / urllib / datetime / re),
-不引入独立 `.py` 文件,部署只需复制整个仓库,无 PYTHONPATH 顾虑。Bash 处理子进程 +
-Python 处理 JSON 的组合,比纯 bash 用 jq + python 切换更直观。
-
-## 数据流(以 `mockplus fetch` 为例)
+## 数据流
 
 ```
-URL
- │
- │ cmd_url (lib/api.sh)
- ▼
-APP_ID + TARGET_ID
- │
- │ ensure_index (lib/api.sh) → cmd_index(若 _index.json 缺失或 >24h)
- │   ├─ http_app /api/v1/app/module/<APPID>/design
- │   ├─ 校验 code == 0
- │   ├─ 保存 _index.json
- │   └─ 扁平化 → _pages.json (pages[] + groups[])
- ▼
-_index.json + _pages.json
- │
- │ tree_kind (lib/api.sh) → 在 _index.json 递归查 TARGET_ID
- ▼
-"page" or "group" or "notfound"
- │
- ├─ "page"  → cmd_page (lib/page.sh)
- │             ├─ 找 PAGE_ID in _pages.json → page-meta.json
- │             ├─ http_cdn dataURL → data.json
- │             ├─ http_cdn imageURL → design.png (+ PNG magic 校验)
- │             └─ cmd_assets (lib/page.sh):遍历 data.json 找 slice → 下载到 assets/
- │
- └─ "group" → cmd_group (lib/group.sh)
-              ├─ 找 GROUP_ID in _index.json,递归收集所有 dataURL 页 id
-              ├─ 写 _meta.json + _page-ids.txt
-              └─ 逐个调 cmd_page
+URL → _api.parse_url_or_short() → (app_id, target_id)
+              ↓
+_api.fetch_index() → _api.resolve_target_kind()
+              ↓
+   page:  _api.cmd_get_data → _api.fetch_page_data → _transform.transform → _schema.validate_lite → stdout
+   group: 报错 22,提示用 tree
+   app:   _tree.cmd_tree → 递归打印
+              ↓
+download-assets(独立流): _assets.cmd_download_assets → 并发 GET CDN → stdout
 ```
 
-## 关键 Mockplus API
+## 关键决策
 
-### `GET /api/v1/app/module/<APPID>/design`
+- **Python 标准库 only**: `urllib.request` / `concurrent.futures` / `argparse`,运行时零 pip 依赖
+- **schema 校验双层**: `validate_lite`(标准库)兜底,`validate_full`(jsonschema 可选)装了启用
+- **API cache 24h**: `~/.cache/mockplus-context/<APP_ID>/{_index.json, <PAGE_ID>/data.json}`,`--refresh` 跳过
+- **切图 cache 由用户管**: `download-assets --local-path` 决定保存位置,文件存在则 skip
+- **globalVars 抽取**: 同样的 fill/text/shadow/stroke 用指纹去重,nodes 引用 ref 而非 inline,LLM token 占用大幅下降
+- **bounds 字段对齐 Sketch 原生**: `{top, left, width, height}`(非 figma 的 `{x, y, w, h}`)— transform 少一层翻译,LLM 写 CSS 直觉一致
+- **type / realType 双轨**: `basic.type`(粗类 group/text/rect 等,LLM 写 CSS)+ `basic.realType`(细类 Artboard/SymbolInstance 等,LLM debug)同时输出
+- **sharedStyle 一对多**: 同一 sharedStyle.id 下不同 layer 解析出不一致的 fill/text 时,首次注册胜出,后续不一致写到 `_meta.warnings`
+- **容错降级**: 单节点 transform panic 时输出 `{id: "_err_xxx", type: "error", ...}` 占位节点,不中断整体输出
+- **未识别字段不静默丢**: transform 用 `LAYER_HANDLED` / `BASIC_HANDLED` 集合标记已消费字段,其余进 `_meta.unhandledFields` → Mockplus 改 schema 立刻可见
 
-| Header | 值 |
-|---|---|
-| `Accept` | `application/json` |
-| `X-MOCKPLUS-APP` | `idoc-for-web|1.41.0-cn|macOS` |
-| `x-mockplus-lang` | `zh-cn` |
-| `Referer` | `https://app.mockplus.cn/` |
-| `Cookie` | (用户的会话 cookie) |
-
-响应:
-```json
-{
-  "code": 0,
-  "message": "ok",
-  "payload": {
-    "pages": [/* 嵌套 group/page 树 */]
-  }
-}
-```
-
-树节点结构:
-```json
-{
-  "_id": "0-ITsFIbmL",
-  "name": "申请页",
-  "isGroup": false,
-  "parentId": "g-sub1",
-  "size": {"width": 375, "height": 812},
-  "backgroundColor": "#ffffffff",
-  "device": "ios1x",
-  "dataURL": "https://img02.mockplus.cn/idoc/.../xyz.json",
-  "imageURL": "https://img02.mockplus.cn/idoc/sketch/aaa/wbyrvwvvlh.png",
-  "slicesCount": 3,
-  "children": []
-}
-```
-
-`isGroup: true` 节点没有 `dataURL`,只有 `children[]`。
-
-### CDN
-
-`dataURL` 指向 Sketch 从 Mockplus 导出的原始结构化 JSON。
-关键字段见 [api-reference.md](api-reference.md) 和 Mockplus 官方文档。
-
-`imageURL` 指向 `@2x` 整页 PNG。
-
-切图 URL 在 `data.json` 的递归 `layers.children[].slice.bitmapURL/svgURL`,
-形如 `https://img02.mockplus.cn/idoc/sketch/<hash>/wbyrvwvvlh.png`。
-我们用 `<hash>` 段做文件名(同一切图的 PNG/SVG 共享 hash)。
-
-## 缓存策略
-
-| 文件 | 何时刷新 |
-|---|---|
-| `_index.json` | mtime > 24h 时自动重拉;`rm` 后强制刷新 |
-| `_pages.json` | `cmd_index` 跑时一并重生成 |
-| `pages/<PID>/data.json` | 不自动检测过期;`rm` 后重跑 `page` |
-| `pages/<PID>/design.png` | 同上 |
-| `assets/<hash>.{png,svg}` | 已存在且非空则跳过;清空文件或 `rm` 后重拉 |
-
-## 与下游的边界
-
-mockplus-context **只产数据**:
-
-```
-mockplus-context  ←─→  ./mockplus-cache/  ←─→  下游(任意)
-        ↑                    ↑
-        │                    │
-   API + CDN              文件系统
-```
-
-下游可以:
-- LLM 直接读 `data.json` 推断 UI
-- 自定义 spec 转换器把 `data.json` 转任意格式(spec.md / Figma 兼容 JSON / Sketch 原 doc)
-- 渲染器把 `data.json` + `assets/` 拼成 HTML/Canvas 预览
-- UI 还原循环工具(如 `flutter-visual-loop`)消费 `data.json` + `design.png` + `assets/`
-
-**本仓库故意不实现以上任何一个**——保持职责单一,便于组合。
+详见 `docs/specs/2026-05-22-skill-redesign-design.md`。

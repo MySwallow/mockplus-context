@@ -1,22 +1,23 @@
 # mockplus-context
 
-# Cookie(默认存在 config/cookie,绝不入库!)
+# Cookie(绝不入库!)
 /config/cookie
 /config/cookie.bak
 
-# 抓取产物(用户工作区,绝不入库)
-mockplus-cache/
-**/mockplus-cache/
+# Raw 样本(P1 用,不入库)
+tests/fixtures/_raw/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
 
 # 备份 / 临时
 *.bak
 *.tmp
 *.swp
 .DS_Store
-
-# Python(理论上不该有,heredoc 嵌入,无需 .pyc)
-__pycache__/
-*.pyc
 
 # IDE
 .idea/

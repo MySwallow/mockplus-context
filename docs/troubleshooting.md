@@ -1,6 +1,6 @@
 # Troubleshooting
 
-按"看到什么现象 → 怎么修"组织。
+按"看到什么现象 → 怎么修"组织。退出码完整列表见 `docs/api-reference.md`。
 
 ## Cookie 类
 
@@ -15,7 +15,7 @@ mockplus cookie status   # 验证文件已写入
 
 ### `ERR: cookie 文件 ... 没有有效内容`
 
-`exit 10`。文件存在但只有注释或空白。重新写入即可:
+`exit 12`。文件存在但只有注释或空白。重新写入即可:
 
 ```bash
 mockplus cookie clear
@@ -40,7 +40,7 @@ mockplus cookie set
 `exit 14`。
 - 检查网络:`curl -sS -v -I https://app.mockplus.cn/ 2>&1 | head -20`
 - 境外节点经常被丢包,挂回国代理
-- Cloudflare 大概率不挡 `curl`,但若挡了会返回 403 HTML
+- Cloudflare 大概率不挡 `urllib`,但若挡了会返回 403 HTML
 
 ---
 
@@ -50,50 +50,70 @@ mockplus cookie set
 
 URL 不是 Mockplus 设计稿链接。合法格式:`https://app.mockplus.cn/app/<APPID>/...`。
 
-### `ERR: page id=xxx not in _pages.json`
+### `ERR: URL 指向 group,先用 tree 浏览`
 
-`exit 31`。`_pages.json` 里没有该 PAGE_ID。常见原因:
-- URL 中的 ID 是 group 而不是 page → 用 `mockplus fetch` 智能分发,或 `mockplus group`
-- 设计稿被移动/删除/重命名了 → `_index.json` 缓存过期:
-  ```bash
-  rm <out_root>/<APP_ID>/_index.json
-  mockplus fetch <URL>
-  ```
+`exit 22`。URL 中的 ID 是 group 或 app,而不是单页。先用 `tree` 浏览,挑出具体 page id:
 
-### `ERR: group id=xxx not found`
+```bash
+mockplus tree <APP_ID>
+# 或
+mockplus tree <APP_ID> --format json | jq -r '.. | objects | select(.kind=="page") | "\(.id) \(.name)"'
+```
 
-`exit 41`。同上,删 `_index.json` 重拉。
+然后:
 
-### `TARGET_ID=xxx 不在 _index.json 树里`
+```bash
+mockplus get-data <APP_ID>:<PAGE_ID>
+```
 
-`exit 42`(`fetch` 子命令)。同上。
+### `ERR: index API code != 0`
+
+`exit 21`。`_index.json` 拉不到,常见原因:
+- cookie 过期 → `mockplus cookie set`
+- 项目被冻结 / 删除 / 无权限
+
+若怀疑 cache 过期:
+
+```bash
+mockplus get-data <URL> --refresh
+mockplus tree <APP_ID> --refresh
+```
 
 ---
 
-## 切图 / 下载类
+## 输出 schema / transform 类
 
-### `WARN: design.png 不是合法 PNG`
+### `_meta.unhandledFields` 不为空
 
-不影响主流程。Mockplus 偶尔会给一个占位 PNG(text/html 或空)。`data.json` 仍然正确。
+Mockplus 升级了 sketch schema,有新字段没消费。
+- 短期无影响(transform 仅丢弃未识别字段,不报错)
+- 长期需要更新 `_transform.py` 里的 `LAYER_HANDLED` / `BASIC_HANDLED` 集合,反馈 issue
 
-### `切图:下载 0,跳过 N,失败 M`
+### `exit 50`:输出 schema 校验失败
 
-CDN(`img02.mockplus.cn`)对应 IP 临时不通。重跑 `mockplus assets <PAGE_DIR>` 一般会自愈
-(脚本会跳过已下载的)。
+transform 输出不符合契约。多半是新字段触发的 bug。带 `--refresh` 重拉一次,贴 stderr 提 issue。
 
-仍失败:
-- 检查 `MOCKPLUS_DEBUG=1 mockplus assets ...` 看具体 URL
-- 浏览器直接打开那个 URL,看是 404 / 403 / 超时
-- 境外节点先翻墙
+### nodes 里出现 `type: "error"` 占位节点
 
-### 整个 `data.json` 下载失败或为空
+单节点 transform panic,容错降级输出占位。其他节点不受影响。带相关 `data.json` 提 issue。
 
-`exit 33`。同上,先 curl 那个 dataURL 看到底是什么响应:
+---
 
-```bash
-URL="$(python3 -c "import json;print(json.load(open('mockplus-cache/<APPID>/pages/<PID>/page-meta.json'))['dataURL'])")"
-curl -v "$URL" 2>&1 | head -30
-```
+## 切图下载类
+
+### `download-assets`:`invalid host`
+
+`exit 2`。URL 不在 `img01.mockplus.cn` 或 `img02.mockplus.cn`。Mockplus CDN 切图地址固定,其他 host 不接受。
+
+### `download-assets`:`unsupported format`
+
+`exit 2`。`url` 或 `fileName` 不是 `.png` 结尾。首版仅支持 PNG。
+
+### `download-assets` 失败一部分 URL
+
+`failed` 数组里会列出失败的 URL 与原因。常见:
+- CDN 临时 5xx → 重跑 `download-assets`(已下载的会以 `cached: true` 跳过)
+- 境外节点丢包 → 挂回国代理
 
 ---
 
@@ -115,36 +135,21 @@ cookie 是别人的账号 / 该账号被踢出项目。换正确账号的 cookie
 
 ## 安装 / 执行类
 
-### `ERR: 缺少工具:curl python3`
+### `python3: command not found`
 
-`exit 3`。
+需要 Python 3.8+。
 
 ```bash
 # macOS
-brew install curl python3
+brew install python3
 
 # Ubuntu / Debian
-apt-get install curl python3
+apt-get install python3
 ```
 
-### `bash: bin/mockplus: Permission denied`
+### `ImportError: cannot import name '_xxx'`
 
-```bash
-chmod +x bin/mockplus scripts/validate.sh tests/smoke.sh
-```
-
----
-
-## CI 类
-
-### shellcheck 报 SC1091 / SC2034
-
-非阻塞,validate.sh 已用 `-e SC1091,SC2034 -S warning` 排除。
-新引入的警告需要修复或加入排除列表。
-
-### macOS 上 `stat` 命令不同
-
-`cookie status` 已用 `stat -f '%Sp' 2>/dev/null || stat -c '%A'` 双系统兼容。
+确保从仓库根目录调用 `python3 scripts/mockplus.py`,或把 `scripts/` 加入 `PYTHONPATH`。
 
 ---
 
@@ -152,6 +157,6 @@ chmod +x bin/mockplus scripts/validate.sh tests/smoke.sh
 
 提 issue,贴:
 - 完整命令(打码 cookie / APP_ID)
-- 完整 stderr 输出(`MOCKPLUS_DEBUG=1` 加上)
+- 完整 stderr 输出
 - `mockplus cookie status` 输出
-- macOS / Linux 版本
+- macOS / Linux 版本 + Python 版本

@@ -1,0 +1,571 @@
+{
+  "slicesCount": 0,
+  "source": "sketch",
+  "isUploadHDDesign": 0,
+  "clientID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
+  "documentVersion": "1.0",
+  "backgroundColor": "#f5f5f5ff",
+  "isUploadHightQualitySlice": 0,
+  "positionX": 272,
+  "markExtraArea": 0,
+  "artboardID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
+  "isUploadHightQuality": 0,
+  "name": "采购申请单列表（老板）",
+  "size": {
+    "width": 375,
+    "height": 812
+  },
+  "pageName": "V1.7 ",
+  "flows": [],
+  "positionY": -2705,
+  "pluginVersion": "5.0.28",
+  "pageID": "1BAB8002-5A50-4983-B2D8-08971BF1B711",
+  "sliceScale": 1,
+  "device": "ios1x",
+  "artboardScale": 2,
+  "layers": {
+    "bounds": {
+      "top": 0,
+      "width": 375,
+      "left": 0,
+      "height": 812
+    },
+    "stroke": {
+      "dash": []
+    },
+    "parts": null,
+    "effect": {
+      "shadows": []
+    },
+    "URL": "https://img02.mockplus.cn/idoc/sketch/f688795b87b2908126b8f0cc91974821707b23c5/wbyrvwvvlh.png",
+    "slice": {},
+    "fill": {
+      "colors": [
+        {
+          "type": "normal",
+          "value": {
+            "r": 245,
+            "b": 245,
+            "g": 245,
+            "a": 1
+          }
+        }
+      ]
+    },
+    "basic": {
+      "id": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
+      "libraryID": "BCE70C89-FD15-4E28-9BE7-1081065A022F",
+      "imageID": "",
+      "type": "group",
+      "opacity": 1,
+      "libraryName": "美孚门店通",
+      "realType": "Artboard",
+      "name": "采购申请单列表?老板?",
+      "sourceID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14"
+    },
+    "text": {},
+    "sharedStyle": {},
+    "children": [
+      {
+        "bounds": {
+          "top": 440,
+          "width": 66,
+          "left": 155,
+          "height": 17
+        },
+        "stroke": {
+          "dash": []
+        },
+        "effect": {
+          "shadows": []
+        },
+        "slice": {
+          "bitmapURL": "https://img02.mockplus.cn/idoc/sketch/abc123/wbyrvwvvlh.png",
+          "realSliceWidth": 64,
+          "realSliceHeight": 64
+        },
+        "fill": {},
+        "basic": {
+          "id": "9A894626-5654-4ACE-9C70-217D7BEE7942",
+          "libraryID": "BCE70C89-FD15-4E28-9BE7-1081065A022F",
+          "imageID": "",
+          "containerSourceName": "04表单/01表单/14底部提示",
+          "type": "text",
+          "opacity": 1,
+          "libraryName": "美孚门店通",
+          "realType": "Text",
+          "name": "已经到底了~",
+          "sourceID": "9A894626-5654-4ACE-9C70-217D7BEE7942"
+        },
+        "text": {
+          "styles": [
+            {
+              "value": "已经到底了~",
+              "fontStyles": {
+                "lineThrough": 0,
+                "bold": 0,
+                "underLine": 0,
+                "italic": 0
+              },
+              "space": {
+                "lineHeight": 17,
+                "letterSpacing": 0,
+                "paragraph": 0
+              },
+              "font": {
+                "size": 12,
+                "family": "PingFang SC",
+                "weight": 400,
+                "name": "苹方-简 常规体",
+                "fontWeight": "Regular",
+                "color": {
+                  "type": "normal",
+                  "value": {
+                    "r": 153,
+                    "b": 153,
+                    "g": 153,
+                    "a": 1
+                  }
+                }
+              },
+              "align": "center"
+            }
+          ]
+        },
+        "sharedStyle": {
+          "id": "70C7CB75-7A69-436D-93F0-5E600C02E3B5",
+          "name": "03文字色3/12px/regular/居中对齐 Style",
+          "type": "TextStyle"
+        }
+      },
+      {
+        "bounds": {
+          "top": 428,
+          "width": 375,
+          "left": 0,
+          "height": 48
+        },
+        "stroke": {
+          "dash": []
+        },
+        "effect": {
+          "shadows": []
+        },
+        "slice": "",
+        "fill": {
+          "colors": [
+            {
+              "type": "normal",
+              "value": {
+                "r": 245,
+                "b": 245,
+                "g": 245,
+                "a": 1
+              }
+            }
+          ]
+        },
+        "basic": {
+          "id": "3DDC4698-9083-427D-B791-46C52A625B4D",
+          "libraryID": "BCE70C89-FD15-4E28-9BE7-1081065A022F",
+          "containerSourceName": "04表单/01表单/14底部提示",
+          "type": "rect",
+          "opacity": 1,
+          "libraryName": "美孚门店通",
+          "realType": "ShapePath",
+          "name": "矩形",
+          "sourceID": "3DDC4698-9083-427D-B791-46C52A625B4D"
+        },
+        "text": {},
+        "sharedStyle": {
+          "id": "18364505-FF64-4C54-BE11-CCCF82BFF5DA",
+          "name": "colors/grey/50",
+          "type": "LayerStyle"
+        }
+      },
+      {
+        "bounds": {
+          "top": 799,
+          "width": 134,
+          "left": 121,
+          "height": 5
+        },
+        "stroke": {
+          "radius": [
+            100,
+            100,
+            100,
+            100
+          ],
+          "dash": []
+        },
+        "effect": {
+          "shadows": []
+        },
+        "slice": "",
+        "fill": {
+          "colors": [
+            {
+              "type": "normal",
+              "value": {
+                "r": 0,
+                "b": 0,
+                "g": 0,
+                "a": 1
+              }
+            }
+          ]
+        },
+        "basic": {
+          "id": "79F6C990-FFA1-48F3-9AB7-5C8047C31D80",
+          "type": "rect",
+          "opacity": 1,
+          "libraryName": "美孚门店通",
+          "realType": "ShapePath",
+          "name": "Home Indicator",
+          "sourceID": "79F6C990-FFA1-48F3-9AB7-5C8047C31D80"
+        },
+        "text": {},
+        "sharedStyle": {}
+      },
+      {
+        "bounds": {
+          "top": 726,
+          "width": 114,
+          "left": 249,
+          "height": 44
+        },
+        "stroke": {
+          "radius": [
+            8,
+            8,
+            8,
+            8
+          ],
+          "dash": []
+        },
+        "effect": {
+          "shadows": []
+        },
+        "slice": "",
+        "fill": {
+          "colors": [
+            {
+              "type": "normal",
+              "value": {
+                "r": 12,
+                "b": 157,
+                "g": 71,
+                "a": 1
+              }
+            }
+          ]
+        },
+        "basic": {
+          "id": "7EE75B8D-7B0E-4B2C-8BEF-57ADD7070551",
+          "type": "rect",
+          "opacity": 1,
+          "libraryName": "美孚门店通",
+          "realType": "ShapePath",
+          "name": "按钮/背景/其它iPhone",
+          "sourceID": "7EE75B8D-7B0E-4B2C-8BEF-57ADD7070551"
+        },
+        "text": {},
+        "sharedStyle": {
+          "id": "F8F45C8E-BD9B-4F37-B089-10EF87F485A6",
+          "name": "blue/600",
+          "type": "LayerStyle"
+        }
+      },
+      {
+        "bounds": {
+          "top": 108,
+          "width": 375,
+          "left": 0,
+          "height": 44
+        },
+        "stroke": {
+          "dash": []
+        },
+        "effect": {
+          "shadows": [
+            {
+              "spread": 0,
+              "offsetX": 0,
+              "blur": 0,
+              "type": "inside",
+              "offsetY": -0.5,
+              "color": {
+                "type": "normal",
+                "value": {
+                  "r": 238,
+                  "b": 238,
+                  "g": 238,
+                  "a": 1
+                }
+              }
+            }
+          ]
+        },
+        "slice": "",
+        "fill": {
+          "colors": [
+            {
+              "type": "normal",
+              "value": {
+                "r": 255,
+                "b": 255,
+                "g": 255,
+                "a": 1
+              }
+            }
+          ]
+        },
+        "basic": {
+          "id": "02938A52-55B5-40AA-B5DC-5ECA69E98108",
+          "containerSourceName": "03筛选/01顶部/01标签/3",
+          "type": "rect",
+          "opacity": 1,
+          "libraryName": "美孚门店通",
+          "realType": "ShapePath",
+          "name": "背景",
+          "sourceID": "02938A52-55B5-40AA-B5DC-5ECA69E98108"
+        },
+        "text": {},
+        "sharedStyle": {
+          "id": "3DDDA75A-6F5F-4648-8D39-0352301D6F85",
+          "name": "02分割/白底/下/EE",
+          "type": "LayerStyle"
+        }
+      },
+      {
+        "bounds": {
+          "top": 4,
+          "width": 22,
+          "left": 346,
+          "height": 10.5
+        },
+        "stroke": {
+          "borders": [
+            {
+              "type": "inside",
+              "strokeWidth": 1,
+              "color": {
+                "type": "normal",
+                "value": {
+                  "r": 0,
+                  "b": 0,
+                  "g": 0,
+                  "a": 1
+                }
+              }
+            }
+          ],
+          "dash": []
+        },
+        "effect": {
+          "shadows": []
+        },
+        "slice": "",
+        "fill": {},
+        "basic": {
+          "id": "FB632493-1E3B-4E3F-A85C-A9D8431C19D4",
+          "containerSourceName": "01导航栏/01原生/白底",
+          "type": "rect",
+          "opacity": 0.4,
+          "libraryName": "美孚门店通",
+          "realType": "ShapePath",
+          "name": "Border",
+          "sourceID": "FB632493-1E3B-4E3F-A85C-A9D8431C19D4"
+        },
+        "text": {},
+        "sharedStyle": {}
+      },
+      {
+        "bounds": {
+          "top": 32.84765625,
+          "width": 10.34,
+          "left": 17.82,
+          "height": 18.3
+        },
+        "stroke": {
+          "dash": []
+        },
+        "effect": {
+          "shadows": []
+        },
+        "slice": "",
+        "fill": {
+          "colors": [
+            {
+              "type": "normal",
+              "value": {
+                "r": 38,
+                "b": 38,
+                "g": 38,
+                "a": 1
+              }
+            }
+          ]
+        },
+        "basic": {
+          "id": "A91C3D46-C1B0-4087-863E-7183D1D8C5B0",
+          "containerSourceName": "01导航栏/01原生/白底",
+          "type": "path",
+          "opacity": 1,
+          "libraryName": "美孚门店通",
+          "realType": "path",
+          "name": "路径备份",
+          "sourceID": "A91C3D46-C1B0-4087-863E-7183D1D8C5B0"
+        },
+        "text": {},
+        "sharedStyle": {
+          "id": "E2D70A6E-AEF7-4E73-AF81-7E702F6ECB9B",
+          "name": "01颜色/03文字色/1",
+          "type": "LayerStyle"
+        }
+      },
+      {
+        "bounds": {
+          "top": 779.6,
+          "width": 16.8,
+          "left": 13.6,
+          "height": 16.8
+        },
+        "stroke": {
+          "dash": []
+        },
+        "effect": {
+          "shadows": []
+        },
+        "slice": "",
+        "fill": {
+          "colors": [
+            {
+              "type": "normal",
+              "value": {
+                "r": 12,
+                "b": 157,
+                "g": 71,
+                "a": 1
+              }
+            }
+          ]
+        },
+        "basic": {
+          "id": "079AACFE-6C8C-4823-BA15-D6CDEFE7A04D",
+          "containerSourceName": "04表单/04单选/卡片-选2",
+          "opacity": 1,
+          "libraryName": "美孚门店通",
+          "realType": "MSShapeGroup",
+          "name": "形状结合",
+          "sourceID": "079AACFE-6C8C-4823-BA15-D6CDEFE7A04D"
+        },
+        "text": {},
+        "sharedStyle": {
+          "id": "B34CA247-2C81-4BF1-B603-020637360F22",
+          "name": "01颜色/03文字色/2",
+          "type": "LayerStyle"
+        }
+      },
+      {
+        "bounds": {
+          "top": 718,
+          "width": 375,
+          "left": 0,
+          "height": 94
+        },
+        "stroke": {
+          "dash": []
+        },
+        "effect": {
+          "shadows": []
+        },
+        "slice": "",
+        "fill": {},
+        "basic": {
+          "id": "0A10D202-AE7F-4271-BBF9-129C9DCFB1BE",
+          "symbolMasterId": "E442B0B5-32A4-48BB-ACE2-FAAA59393AD4",
+          "libraryID": "D3C501DC-1DA2-4FE4-AA37-8B098D47B7A7",
+          "imageID": "",
+          "symbolId": "8A5E893D-9C2F-4233-8136-8976C243CB45",
+          "containerSourceName": "07按钮/01吸底/03结算类/全选+数价",
+          "type": "symbol",
+          "opacity": 1,
+          "libraryName": "美孚门店通规范",
+          "realType": "SymbolInstance",
+          "name": "07按钮/01吸底/03结算类/全选+数价",
+          "sourceID": "0A10D202-AE7F-4271-BBF9-129C9DCFB1BE"
+        },
+        "text": {},
+        "sharedStyle": {},
+        "children": [
+          {
+            "bounds": {
+              "top": 737,
+              "width": 80,
+              "left": 266,
+              "height": 22
+            },
+            "stroke": {
+              "dash": []
+            },
+            "effect": {
+              "shadows": []
+            },
+            "slice": "",
+            "fill": {},
+            "basic": {
+              "id": "150B9D4D-E722-4BF2-AB7B-0467C1334A0D",
+              "type": "text",
+              "opacity": 1,
+              "libraryName": "美孚门店通",
+              "realType": "Text",
+              "name": "页面内",
+              "sourceID": "150B9D4D-E722-4BF2-AB7B-0467C1334A0D"
+            },
+            "text": {
+              "styles": [
+                {
+                  "value": "合并转采购",
+                  "fontStyles": {
+                    "lineThrough": 0,
+                    "bold": 0,
+                    "underLine": 0,
+                    "italic": 0
+                  },
+                  "space": {
+                    "lineHeight": 22,
+                    "paragraph": 0
+                  },
+                  "font": {
+                    "size": 16,
+                    "family": "PingFang SC",
+                    "weight": 600,
+                    "name": "苹方-简 中粗体",
+                    "fontWeight": "Semibold",
+                    "color": {
+                      "type": "normal",
+                      "value": {
+                        "r": 255,
+                        "b": 255,
+                        "g": 255,
+                        "a": 1
+                      }
+                    }
+                  },
+                  "align": "center"
+                }
+              ]
+            },
+            "sharedStyle": {
+              "id": "21B6C4A6-2C7D-43B1-816B-8A243DCECA9C",
+              "name": "09白色/16px/semibold/居中对齐 Style",
+              "type": "TextStyle"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

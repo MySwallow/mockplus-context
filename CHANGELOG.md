@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.2.0 — 2026-05-22
+
+**Breaking change: 整体重构为 Python skill,bash CLI 移除。**
+
+### Added
+- Python 单文件 skill (`scripts/mockplus.py`),4 个主子命令(get-data / tree / download-assets / cookie *)+ `inspect` 辅助
+- 结构化 JSON 输出(对齐 figma-context MCP 心智模型): `metadata` + `globalVars` + `nodes` + `_meta`
+- `SKILL.md` LLM 入口
+- `_meta.unhandledFields` 字段追踪,Mockplus 改 schema 立刻可见
+- 测试覆盖: transform 黄金对照(5 fixture)、schema 校验、tree/assets 单元测试,共 18 个测试
+
+### Changed
+- 子命令重命名:
+  - `page <APP> <PAGE>` → `get-data <URL>`(JSON 到 stdout,不再落文件)
+  - `assets <PAGE_DIR>` → `download-assets --downloads ... --local-path ...`
+  - `index` / `url` / `fetch` 不再暴露(内部 module)
+- `group <APP> <GROUP>` **不再保留**,group 浏览改用 `tree` 浏览 + LLM 循环调 `get-data`
+- API cache 默认路径: `./mockplus-cache/` → `~/.cache/mockplus-context/`(env `MOCKPLUS_OUT_ROOT` 覆盖)
+- `config/cookie` 路径保留兼容,老用户 cookie 不失效
+
+### Removed
+- `bin/mockplus` 及全部 `lib/*.sh`、`scripts/validate.sh`、`tests/smoke.sh`
+- SVG 切图下载(首版 PNG-only,后续可加)
+
+### Migration
+- 老用户的 `config/cookie` 沿用,不用重配
+- 切图 cache 默认位置变了,旧的 `./mockplus-cache/` 想保留 → `export MOCKPLUS_OUT_ROOT=./mockplus-cache`
+- 脚本里 `./bin/mockplus xxx` 调用全部换为 `python3 scripts/mockplus.py xxx`
+
 ## [0.1.0] - 2026-05-22
 
 初始版本。从早期内嵌实现抽出来,独立成 GitHub 仓库,

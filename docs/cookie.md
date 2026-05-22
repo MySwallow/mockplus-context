@@ -64,7 +64,7 @@ shred -u /tmp/mp.cookie   # 或 rm -P
 
 ```bash
 export MOCKPLUS_COOKIE='_clck=...; mockuuid=...; ds.sid=...'
-mockplus fetch ...
+mockplus get-data <URL>
 ```
 
 **优先级**:`MOCKPLUS_COOKIE`(环境变量)> cookie 文件。
@@ -118,7 +118,7 @@ mockplus cookie clear
 
 ```bash
 # 单次
-MOCKPLUS_COOKIE_FILE=/path/to/cookie mockplus fetch ...
+MOCKPLUS_COOKIE_FILE=/path/to/cookie mockplus get-data <URL>
 
 # 永久(写到 ~/.zshrc / ~/.bashrc)
 export MOCKPLUS_COOKIE_FILE=$HOME/Secrets/mockplus.cookie
@@ -130,7 +130,7 @@ export MOCKPLUS_COOKIE_FILE=$HOME/Secrets/mockplus.cookie
 |---|---|
 | cookie 泄露到 git | 默认存在 `<repo>/config/cookie`,**已在 `.gitignore` 里硬编码 `/config/cookie`** —— `git add .` 不会带进去 |
 | cookie 泄露到 shell history | **绝不要** `mockplus cookie set "_clck=..."` 这种位置参数。本工具也没设计这种接口——只接受 stdin / `--from-file` / 环境变量 |
-| cookie 泄露到日志 | 脚本所有日志走 stderr,从不打印 cookie 内容(`MOCKPLUS_DEBUG=1` 只打印 URL,不打印 header) |
+| cookie 泄露到日志 | 脚本所有日志走 stderr,从不打印 cookie 内容,debug 日志只打印 URL 不打印 header |
 | cookie 文件被其他用户读 | 自动 `chmod 600`(只有 owner 可读写) |
 | 长期不轮换 | `cookie status` 显示剩余天数,过期前 `cookie set` 重写 |
 | Linux 多用户共享机器 | 把存储位置改到加密目录:`MOCKPLUS_COOKIE_FILE=$HOME/.ecryptfs/mockplus.cookie` |

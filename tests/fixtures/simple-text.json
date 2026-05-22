@@ -1,0 +1,139 @@
+{
+  "slicesCount": 0,
+  "source": "sketch",
+  "isUploadHDDesign": 0,
+  "clientID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
+  "documentVersion": "1.0",
+  "backgroundColor": "#f5f5f5ff",
+  "isUploadHightQualitySlice": 0,
+  "positionX": 272,
+  "markExtraArea": 0,
+  "artboardID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
+  "isUploadHightQuality": 0,
+  "name": "采购申请单列表（老板）",
+  "size": {
+    "width": 375,
+    "height": 812
+  },
+  "pageName": "V1.7 ",
+  "flows": [],
+  "positionY": -2705,
+  "pluginVersion": "5.0.28",
+  "pageID": "1BAB8002-5A50-4983-B2D8-08971BF1B711",
+  "sliceScale": 1,
+  "device": "ios1x",
+  "artboardScale": 2,
+  "layers": {
+    "bounds": {
+      "top": 0,
+      "width": 375,
+      "left": 0,
+      "height": 812
+    },
+    "stroke": {
+      "dash": []
+    },
+    "parts": null,
+    "effect": {
+      "shadows": []
+    },
+    "URL": "https://img02.mockplus.cn/idoc/sketch/f688795b87b2908126b8f0cc91974821707b23c5/wbyrvwvvlh.png",
+    "slice": {},
+    "fill": {
+      "colors": [
+        {
+          "type": "normal",
+          "value": {
+            "r": 245,
+            "b": 245,
+            "g": 245,
+            "a": 1
+          }
+        }
+      ]
+    },
+    "basic": {
+      "id": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
+      "libraryID": "BCE70C89-FD15-4E28-9BE7-1081065A022F",
+      "imageID": "",
+      "type": "group",
+      "opacity": 1,
+      "libraryName": "美孚门店通",
+      "realType": "Artboard",
+      "name": "采购申请单列表?老板?",
+      "sourceID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14"
+    },
+    "text": {},
+    "sharedStyle": {},
+    "children": [
+      {
+        "bounds": {
+          "top": 440,
+          "width": 66,
+          "left": 155,
+          "height": 17
+        },
+        "stroke": {
+          "dash": []
+        },
+        "effect": {
+          "shadows": []
+        },
+        "slice": "",
+        "fill": {},
+        "basic": {
+          "id": "9A894626-5654-4ACE-9C70-217D7BEE7942",
+          "libraryID": "BCE70C89-FD15-4E28-9BE7-1081065A022F",
+          "imageID": "",
+          "containerSourceName": "04表单/01表单/14底部提示",
+          "type": "text",
+          "opacity": 1,
+          "libraryName": "美孚门店通",
+          "realType": "Text",
+          "name": "已经到底了~",
+          "sourceID": "9A894626-5654-4ACE-9C70-217D7BEE7942"
+        },
+        "text": {
+          "styles": [
+            {
+              "value": "已经到底了~",
+              "fontStyles": {
+                "lineThrough": 0,
+                "bold": 0,
+                "underLine": 0,
+                "italic": 0
+              },
+              "space": {
+                "lineHeight": 17,
+                "letterSpacing": 0,
+                "paragraph": 0
+              },
+              "font": {
+                "size": 12,
+                "family": "PingFang SC",
+                "weight": 400,
+                "name": "苹方-简 常规体",
+                "fontWeight": "Regular",
+                "color": {
+                  "type": "normal",
+                  "value": {
+                    "r": 153,
+                    "b": 153,
+                    "g": 153,
+                    "a": 1
+                  }
+                }
+              },
+              "align": "center"
+            }
+          ]
+        },
+        "sharedStyle": {
+          "id": "70C7CB75-7A69-436D-93F0-5E600C02E3B5",
+          "name": "03文字色3/12px/regular/居中对齐 Style",
+          "type": "TextStyle"
+        }
+      }
+    ]
+  }
+}
