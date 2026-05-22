@@ -38,10 +38,10 @@ download-assets(独立流): _assets.cmd_download_assets → 并发 GET CDN → s
 - **API cache 24h**: `~/.cache/mockplus-context/<APP_ID>/{_index.json, <PAGE_ID>/data.json}`,`--refresh` 跳过
 - **切图 cache 由用户管**: `download-assets --local-path` 决定保存位置,文件存在则 skip
 - **globalVars 抽取**: 同样的 fill/text/shadow/stroke 用指纹去重,nodes 引用 ref 而非 inline,LLM token 占用大幅下降
-- **bounds 字段对齐 Sketch 原生**: `{top, left, width, height}`(非 figma 的 `{x, y, w, h}`)— transform 少一层翻译,LLM 写 CSS 直觉一致
+- **bounds 字段沿用 Sketch 原生**: `{top, left, width, height}` — transform 少一层翻译,LLM 写 CSS 直觉一致
 - **type / realType 双轨**: `basic.type`(粗类 group/text/rect 等,LLM 写 CSS)+ `basic.realType`(细类 Artboard/SymbolInstance 等,LLM debug)同时输出
 - **sharedStyle 一对多**: 同一 sharedStyle.id 下不同 layer 解析出不一致的 fill/text 时,首次注册胜出,后续不一致写到 `_meta.warnings`
 - **容错降级**: 单节点 transform panic 时输出 `{id: "_err_xxx", type: "error", ...}` 占位节点,不中断整体输出
 - **未识别字段不静默丢**: transform 用 `LAYER_HANDLED` / `BASIC_HANDLED` 集合标记已消费字段,其余进 `_meta.unhandledFields` → Mockplus 改 schema 立刻可见
 
-详见 `docs/specs/2026-05-22-skill-redesign-design.md`。
+输出 JSON 字段速览见 `SKILL.md` 的 "输出 JSON 速览" 章节。

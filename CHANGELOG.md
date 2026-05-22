@@ -1,12 +1,33 @@
 # Changelog
 
+## v0.3.0 — 2026-05-22
+
+**仓库结构标准化 + 文案聚焦清理。**
+
+### Changed
+- **Breaking**: 仓库结构调整,所有 skill 内容迁入 `skills/mockplus-context/` 子目录,自包含完整:`SKILL.md` + `scripts/` + `docs/` + `tests/` + `config/`(运行时)
+- 命令调用路径:
+  - 老: `python3 scripts/mockplus.py <cmd>`
+  - 新: `python3 skills/mockplus-context/scripts/mockplus.py <cmd>`
+  - **强烈建议设 alias**: `alias mockplus='python3 /path/to/repo/skills/mockplus-context/scripts/mockplus.py'`
+- Cookie 文件默认位置:`<repo_root>/config/cookie` → `<repo_root>/skills/mockplus-context/config/cookie`(env `MOCKPLUS_COOKIE_FILE` 可覆盖)
+- SKILL.md 重写为标准 progressive disclosure 格式,description 更聚焦使用场景
+
+### Removed
+- 所有面向用户文档中的外部工具对照说明,保持 skill 单一聚焦
+- 开发期 spec/plan 历史文档 `docs/specs/` 与 `docs/plans/`(代码已落地,git 历史可查)
+
+### Migration
+- 老用户:`git pull` 后用 alias 屏蔽路径变化,或把 cookie 文件手动移到新位置
+- pytest 跑法:`cd skills/mockplus-context && python3 -m pytest tests/ -v`
+
 ## v0.2.0 — 2026-05-22
 
 **Breaking change: 整体重构为 Python skill,bash CLI 移除。**
 
 ### Added
 - Python 单文件 skill (`scripts/mockplus.py`),4 个主子命令(get-data / tree / download-assets / cookie *)+ `inspect` 辅助
-- 结构化 JSON 输出(对齐 figma-context MCP 心智模型): `metadata` + `globalVars` + `nodes` + `_meta`
+- 结构化 JSON 输出:`metadata` + `globalVars` + `nodes` + `_meta` 四段式分层契约
 - `SKILL.md` LLM 入口
 - `_meta.unhandledFields` 字段追踪,Mockplus 改 schema 立刻可见
 - 测试覆盖: transform 黄金对照(5 fixture)、schema 校验、tree/assets 单元测试,共 18 个测试

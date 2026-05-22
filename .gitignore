@@ -1,11 +1,11 @@
 # mockplus-context
 
 # Cookie(绝不入库!)
-/config/cookie
-/config/cookie.bak
+**/config/cookie
+**/config/cookie.bak
 
-# Raw 样本(P1 用,不入库)
-tests/fixtures/_raw/
+# Raw 样本(开发期用,不入库)
+**/tests/fixtures/_raw/
 
 # Python
 __pycache__/

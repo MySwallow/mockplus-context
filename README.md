@@ -1,15 +1,38 @@
 # mockplus-context
 
-> 从 Mockplus(摹客)设计稿抓取**结构化 JSON + 切图**,接口对齐 figma-context MCP 心智模型。Python 单文件 skill,无外部依赖。
+> 从 Mockplus(摹客)设计稿抓取**结构化 JSON + 切图**。Python 单文件 skill,无运行时外部依赖。
 
-## 与 figma-context 的对照
+供 Claude / Cursor 等 LLM 直接消费。粘贴一个 Mockplus develop URL,LLM 就能拿到分层 JSON(metadata + globalVars + nodes),按需下载切图,然后还原 UI 代码。
 
-| | figma-context | mockplus-context |
-|---|---|---|
-| 拿数据 | `get_figma_data(fileKey, nodeId?)` | `get-data <URL>`(仅整页,Mockplus API 物理约束) |
-| 下图 | `download_figma_images(nodes[], localPath)` | `download-assets --downloads '[{url,fileName}]' --local-path` |
-| 项目浏览 | LLM 自己从 file 推 | `tree <APP_ID>` 浏览 group/page 树 |
-| 输出 | typed JSON(globalVars+nodes) | 同结构,字段沿用 Sketch 原生命名(bounds.top/left/width/height) |
+## 仓库布局
+
+```
+mockplus-context/                  # 仓库根
+├── README.md                      # 本文件(项目级介绍)
+├── CHANGELOG.md
+├── LICENSE
+├── .gitignore
+├── .github/
+└── skills/
+    └── mockplus-context/          # skill 自包含
+        ├── SKILL.md               # LLM 入口(progressive disclosure)
+        ├── scripts/               # Python CLI
+        ├── docs/                  # 进阶参考文档
+        ├── tests/                 # pytest + fixtures
+        └── config/                # 运行时(cookie,gitignored)
+```
+
+LLM 主要消费 `skills/mockplus-context/SKILL.md`,其余按需深入。
+
+## 能力
+
+- 把 Mockplus 单页设计稿转换为结构化 JSON(沿用 Sketch 原生 bounds 字段,LLM 写 CSS 直觉一致)
+- 浏览 Mockplus 项目的 group / page 树
+- 并发下载 Mockplus CDN 上的切图(`.png`)
+- cookie 全生命周期管理(`set` / `test` / `status` / `clear` / `path`)
+- `inspect` 子命令做回归检测(统计 + 异常)
+
+> Mockplus API 的物理约束:**只能按整页(page)** 拉数据。Group/sub-group 没有节点级 API,所以拉数据只接受 page URL;group 浏览靠 `tree`。
 
 ## 安装
 
@@ -18,15 +41,17 @@
 ```bash
 git clone https://github.com/<you>/mockplus-context.git
 cd mockplus-context
-python3 scripts/mockplus.py --help
+python3 skills/mockplus-context/scripts/mockplus.py --help
 ```
 
-加 PATH 后用着方便:
+加 alias 用着更顺手:
 
 ```bash
-alias mockplus='python3 /path/to/mockplus-context/scripts/mockplus.py'
+alias mockplus='python3 /path/to/mockplus-context/skills/mockplus-context/scripts/mockplus.py'
 mockplus --help
 ```
+
+下文示例假设已配好 `mockplus` alias。
 
 ## 5 分钟上手
 
@@ -40,7 +65,7 @@ mockplus cookie test <任意 APP_ID>
 # 3. 拉单页结构化 JSON
 mockplus get-data 'https://app.mockplus.cn/app/<APP_ID>/develop/design/<PAGE_ID>' > page.json
 
-# 4. 拉切图(把 page.json 里的 asset.url 喂过来)
+# 4. 拉切图(把 page.json 里 asset.url 喂过来)
 mockplus download-assets \
   --downloads '[{"url":"https://img02.mockplus.cn/.../<hash>.png","fileName":"nav-back.png"}]' \
   --local-path ./assets
@@ -60,31 +85,31 @@ mockplus download-assets \
 | `mockplus cookie clear` | 删 cookie |
 | `mockplus cookie path` | 打印 cookie 路径 |
 
-详见 `docs/api-reference.md`。
+详见 `skills/mockplus-context/docs/api-reference.md`。
 
 ## 环境变量
 
 | 变量 | 默认 | 说明 |
 |---|---|---|
 | `MOCKPLUS_COOKIE` | (空) | 优先于文件 |
-| `MOCKPLUS_COOKIE_FILE` | `config/cookie` | 覆盖 cookie 文件位置 |
+| `MOCKPLUS_COOKIE_FILE` | `skills/mockplus-context/config/cookie` | 覆盖 cookie 文件位置 |
 | `MOCKPLUS_OUT_ROOT` | `~/.cache/mockplus-context` | API 响应 cache 根 |
 
 ## 文档
 
 | 文档 | 内容 |
 |---|---|
-| `SKILL.md` | LLM 入口(给 Claude / Cursor 等读) |
-| `docs/specs/2026-05-22-skill-redesign-design.md` | 设计 spec |
-| `docs/api-reference.md` | 命令完整签名 |
-| `docs/architecture.md` | 模块划分 |
-| `docs/cookie.md` | cookie 获取 / 配置 |
-| `docs/troubleshooting.md` | 故障排查 |
-| `docs/examples.md` | 使用示例 |
+| `skills/mockplus-context/SKILL.md` | LLM 入口(给 Claude / Cursor 等读) |
+| `skills/mockplus-context/docs/api-reference.md` | 命令完整签名 |
+| `skills/mockplus-context/docs/architecture.md` | 模块划分与字段语义 |
+| `skills/mockplus-context/docs/cookie.md` | cookie 获取 / 配置 |
+| `skills/mockplus-context/docs/examples.md` | 端到端使用示例 |
+| `skills/mockplus-context/docs/troubleshooting.md` | 故障排查 |
 
 ## 开发 / 测试
 
 ```bash
+cd skills/mockplus-context
 python3 -m pip install --user -r tests/requirements.txt
 python3 -m pytest tests/ -v
 ```
