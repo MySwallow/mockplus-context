@@ -1,6 +1,6 @@
 ---
 name: mockplus-context
-description: 从 Mockplus(摹客 app.mockplus.cn)设计稿抓取**结构化 YAML + 切图**。**触发场景**:用户给出 Mockplus develop URL(形如 `https://app.mockplus.cn/app/<APPID>/develop/design/<PAGEID>`)、要求"读 Mockplus 设计稿"、"按 Mockplus 还原 UI"、"导出 Mockplus 切图"、把 Mockplus 页面转 Vue/Flutter/小程序。LLM 拿到 YAML(metadata + nodes + globalVars.styles)可直接生成代码,无需解析 sketch 原始 JSON,比让 LLM 看 PNG 截图精度高一个数量级。
+description: 从 Mockplus(摹客 / mockplus.cn / app.mockplus.cn / idoc)设计稿抓取**结构化 YAML + 切图**,LLM 拿到分层 YAML(metadata + nodes + globalVars.styles)可直接生成 Vue / React / Flutter / 小程序代码,无需解析 sketch 原始 JSON,比让 LLM 看 PNG 截图精度高一个数量级。**只要用户的输入或意图涉及 Mockplus/摹客设计稿,就应该用这个 skill,即使他们没明确说"用 mockplus-context"或"用工具"** —— 触发场景包括:粘贴 `https://app.mockplus.cn/app/<APPID>/develop/design/<PAGEID>` 形式的 URL、提到"摹客/Mockplus 设计稿/原型/标注/切图/idoc"、说"按 Mockplus 还原 UI / 对照 Mockplus 改 / 把这个 Mockplus 页面转成 [前端框架]"、或单纯抛出一个 Mockplus 域名链接让你"看看"/"按这个做"/"参考这个"。
 ---
 
 # Mockplus Context (v0.5.0)
