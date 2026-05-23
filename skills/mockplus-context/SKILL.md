@@ -1,6 +1,16 @@
 ---
 name: mockplus-context
-description: 从 Mockplus(摹客 / mockplus.cn / app.mockplus.cn / idoc)设计稿抓取**结构化 YAML + 切图**,LLM 拿到分层 YAML(metadata + nodes + globalVars.styles)可直接生成 Vue / React / Flutter / 小程序代码,无需解析 sketch 原始 JSON,比让 LLM 看 PNG 截图精度高一个数量级。**只要用户的输入或意图涉及 Mockplus/摹客设计稿,就应该用这个 skill,即使他们没明确说"用 mockplus-context"或"用工具"** —— 触发场景包括:粘贴 `https://app.mockplus.cn/app/<APPID>/develop/design/<PAGEID>` 形式的 URL、提到"摹客/Mockplus 设计稿/原型/标注/切图/idoc"、说"按 Mockplus 还原 UI / 对照 Mockplus 改 / 把这个 Mockplus 页面转成 [前端框架]"、或单纯抛出一个 Mockplus 域名链接让你"看看"/"按这个做"/"参考这个"。
+description: |
+  ALWAYS invoke for any request touching Mockplus or 摹客 design sources. This is the ONLY skill for fetching Mockplus page data (structure, 标注, 字号, 颜色, 尺寸, layout, 切图/icon export) and feeding it into UI/code work.
+
+  Trigger immediately, without asking, on ANY of these signals:
+  - The string "Mockplus" or "摹客" appears anywhere in the user's message
+  - Any URL containing `mockplus.cn`, `app.mockplus.cn`, or `idoc` (full or partial, e.g. `app.mockplus.cn/app/.../develop/design/...`)
+  - A Mockplus link plus phrases like 看看 / 按这个做 / 还原 / 复刻 / 转成 Vue / 转成 React / 转成 Flutter / 转成小程序 / 对比 / 取源数据 / 拿标注 / 切图 / icon
+
+  The link or keyword ALONE is enough — never wait for the user to say "use the skill" or "use a tool". Pairing with a frontend framework (Vue/React/Flutter/小程序/Tailwind) makes it MORE relevant, not less.
+
+  Skip ONLY for: Figma URLs, isolated PNG/PDF/screenshot files with no Mockplus link, local .sketch parsing, building a Mockplus-clone product, or Mockplus desktop-app UI bugs.
 ---
 
 # Mockplus Context (v0.5.0)
@@ -56,8 +66,8 @@ mockplus cookie {set|test|status|clear|path}
 
 ```yaml
 metadata:
-  name: 采购申请单列表（老板）
-  pageId: -hKyUPiOs
+  name: Sample Page
+  pageId: pgA1bC2X3
   device: ios1x
   size: { width: 375, height: 812 }
   backgroundColor: '#f5f5f5'
@@ -66,12 +76,12 @@ metadata:
 
 nodes:
   - id: <UUID>
-    name: 合并转采购
+    name: Submit Action
     type: TEXT                         # FRAME/TEXT/INSTANCE/RECTANGLE/ELLIPSE/VECTOR
     layout: layout_000007              # 引用 globalVars.styles
     fills: fill_000001                 # 可选
-    text: "合并转采购"
-    textStyle: 01文字色1/16px/semibold/居中对齐 Style   # 设计师命名
+    text: "Submit Action"
+    textStyle: Body/16px/Semibold/Center Style   # 设计师命名
     children: [...]
 
 globalVars:
@@ -84,7 +94,7 @@ globalVars:
       mode: none
       locationRelativeToParent: { x: 266, y: 737 }
       dimensions: { width: 80, height: 22 }
-    01文字色1/16px/semibold/居中对齐 Style:
+    Body/16px/Semibold/Center Style:
       fontFamily: PingFang SC
       fontWeight: 600
       fontSize: 16

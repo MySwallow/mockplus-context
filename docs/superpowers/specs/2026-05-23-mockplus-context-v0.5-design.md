@@ -161,9 +161,9 @@ mockplus cookie {set|test|status|clear|path}
 
 ```yaml
 metadata:
-  name: 采购申请单列表（老板）
-  path: v1.7 / V1.7采购申请列表 / 采购申请单列表（老板）
-  pageId: -hKyUPiOs
+  name: Sample Page
+  path: Module / Module Subgroup / Sample Page
+  pageId: pgA1bC2X3
   appId: <APPID>
   device: ios1x
   size: { width: 375, height: 812 }
@@ -173,7 +173,7 @@ metadata:
 
 nodes:
   - id: <UUID>
-    name: 合并转采购
+    name: Submit Action
     type: TEXT                         # FRAME/TEXT/INSTANCE/RECTANGLE/ELLIPSE/VECTOR
     layout: layout_000007              # 引用 globalVars.styles
     fills: fill_000001                 # 可选
@@ -181,8 +181,8 @@ nodes:
     effects: effect_000001             # 可选
     borderRadius: 8px                  # 可选
     opacity: 0.5                       # 可选（< 1 才输出）
-    text: "合并转采购"                 # TEXT
-    textStyle: 01文字色1/16px/semibold/居中对齐 Style   # 设计师命名
+    text: "Submit Action"                 # TEXT
+    textStyle: Body/16px/Semibold/Center Style   # 设计师命名
     componentId: <libId>/<componentName>                # INSTANCE
     children: [...]
 
@@ -202,7 +202,7 @@ globalVars:
       sizing: { horizontal: fixed, vertical: fixed }
       locationRelativeToParent: { x: 266, y: 737 }
       dimensions: { width: 80, height: 22 }
-    01文字色1/16px/semibold/居中对齐 Style:             # key 用设计师命名
+    Body/16px/Semibold/Center Style:             # key 用设计师命名
       fontFamily: PingFang SC
       fontWeight: 600
       fontSize: 16
@@ -227,7 +227,7 @@ _meta:
 | stroke | `stroke_NNNNNN` | `stroke_000001` |
 | effect | `effect_NNNNNN` | `effect_000001` |
 | layout | `layout_NNNNNN` | `layout_000007` |
-| textStyle(有 sharedStyle) | sharedStyle.name 原样 | `01文字色1/16px/semibold/居中对齐 Style` |
+| textStyle(有 sharedStyle) | sharedStyle.name 原样 | `Body/16px/Semibold/Center Style` |
 | textStyle(无 sharedStyle) | `textStyle_NNNNNN` | `textStyle_000001` |
 
 **特殊字符处理**:sharedStyle.name 保留原文(含中文 / 中文标点 / 空格 / 斜杠等),只在 YAML 序列化时按 YAML 规则 quote。冲突场景(两个 sharedStyle 同名):后到的加 `_2`/`_3` 后缀。

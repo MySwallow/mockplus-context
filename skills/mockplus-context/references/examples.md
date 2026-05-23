@@ -7,19 +7,19 @@
 ## 例 1:单页拿 YAML
 
 **Input(用户意图):**
-> "把这个 Mockplus 页面的结构给我:`https://app.mockplus.cn/app/5gAIPn9LE/develop/design/FCSuBXozo`"
+> "把这个 Mockplus 页面的结构给我:`https://app.mockplus.cn/app/<APP_ID>/develop/design/<PAGE_ID>`"
 
 **Command:**
 ```bash
-mockplus data 'https://app.mockplus.cn/app/5gAIPn9LE/develop/design/FCSuBXozo' --out page.yaml
+mockplus data 'https://app.mockplus.cn/app/<APP_ID>/develop/design/<PAGE_ID>' --out page.yaml
 ```
 
 **Output(`page.yaml` 前 20 行):**
 ```yaml
 metadata:
-  name: 1.7-首页-员工
-  pageId: FCSuBXozo
-  appId: 5gAIPn9LE
+  name: Home Page
+  pageId: <PAGE_ID>
+  appId: <APP_ID>
   device: ios1x
   size: { width: 375, height: 812 }
 nodes:
@@ -87,7 +87,7 @@ LLM 接下来可以同时拿 YAML(写代码)+ design.png(视觉对比)+ 切图(<
 ## 例 4:URL 是 group 时先用 tree 找 page
 
 **Input(用户意图):**
-> "这个 Mockplus 项目里有个'采购申请'相关的页面,帮我找出来"
+> "这个 Mockplus 项目里有个'Sample Module'相关的页面,帮我找出来"
 > *(用户只给出 `https://app.mockplus.cn/app/<APP>` 或一个 group URL)*
 
 **Command:**
@@ -97,10 +97,10 @@ mockplus tree <APP_ID>
 
 **Output(stdout):**
 ```
-📁 v1.7
-  📁 V1.7采购申请列表
-    📄 采购申请单列表(老板)  [-hKyUPiOs]  (375x812)
-    📄 采购申请单列表(员工)  [aBcD1234x]  (375x812)
+📁 Module
+  📁 Module Subgroup
+    📄 Sample Page  [pgA1bC2X3]  (375x812)
+    📄 Sample Page (Variant)  [pgD3eF4Y5]  (375x812)
     📄 ...
 ```
 
@@ -111,12 +111,12 @@ mockplus tree <APP_ID> --format json | jq -r '.. | objects | select(.kind=="page
 
 输出:
 ```
--hKyUPiOs 采购申请单列表(老板)
-aBcD1234x 采购申请单列表(员工)
+pgA1bC2X3 Sample Page
+pgD3eF4Y5 Sample Page (Variant)
 ...
 ```
 
-LLM 拿到 page id 后再 `mockplus data <APP>:-hKyUPiOs`。
+LLM 拿到 page id 后再 `mockplus data <APP>:pgA1bC2X3`。
 
 ---
 

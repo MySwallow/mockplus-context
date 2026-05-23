@@ -80,7 +80,7 @@ mockplus data <URL>
 
 ```bash
 # 用任意一个你能访问的 APP_ID(从 URL 里 /app/XXX/ 段抠出)
-mockplus cookie test 5gAIPn9LE
+mockplus cookie test <APP_ID>
 # OK: code=0 项目页面数=12
 ```
 
