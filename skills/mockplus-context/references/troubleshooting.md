@@ -1,21 +1,21 @@
 # Troubleshooting
 
-按"看到什么现象 → 怎么修"组织。退出码完整列表见 `api-reference.md`。
+按"看到什么现象 → 怎么修"组织。完整退出码见 [`../SKILL.md`](../SKILL.md)。
 
 ## Cookie 类
 
-### `ERR: 未找到 cookie(运行:mockplus cookie set)`
+### `ERR: cookie 未配置,运行 mockplus cookie set`
 
-`exit 10`。本机既无 `MOCKPLUS_COOKIE` 环境变量,也无 `<repo_root>/config/cookie` 文件。
+`exit 10`。本机既无 `MOCKPLUS_COOKIE` 环境变量,也无 `~/.config/mockplus/cookie` 文件。
 
 ```bash
 mockplus cookie set      # 交互式粘贴
 mockplus cookie status   # 验证文件已写入
 ```
 
-### `ERR: cookie 文件 ... 没有有效内容`
+### `ERR: cookie 为空`
 
-`exit 12`。文件存在但只有注释或空白。重新写入即可:
+`exit 12`。stdin / 文件没有有效内容(只有注释或空白)。重新写入即可:
 
 ```bash
 mockplus cookie clear
@@ -31,11 +31,11 @@ mockplus cookie set
    ```
 2. **APP_ID 你无权限**:换个你能在浏览器打开的项目 ID 重试。
 
-### `cookie status` 显示 `Days remaining: ?`
+### `cookie status` 显示损坏的时间戳
 
-`expires_at` 注释行缺失(老格式 cookie 文件)。重新 `cookie set` 一次。
+`expires_at` 注释行格式错误或缺失(老格式 cookie 文件)。重新 `cookie set` 一次。
 
-### `cookie test`:`请求失败(网络或 HTTP 层)`
+### `cookie test`:`ERR: 网络错误 ... `
 
 `exit 14`。
 - 检查网络:`curl -sS -v -I https://app.mockplus.cn/ 2>&1 | head -20`
@@ -50,7 +50,7 @@ mockplus cookie set
 
 URL 不是 Mockplus 设计稿链接。合法格式:`https://app.mockplus.cn/app/<APPID>/...`。
 
-### `ERR: URL 指向 group,先用 tree 浏览`
+### `ERR: URL 指向 group,先用 mockplus tree ...`
 
 `exit 22`。URL 中的 ID 是 group 或 app,而不是单页。先用 `tree` 浏览,挑出具体 page id:
 
@@ -63,10 +63,10 @@ mockplus tree <APP_ID> --format json | jq -r '.. | objects | select(.kind=="page
 然后:
 
 ```bash
-mockplus get-data <APP_ID>:<PAGE_ID>
+mockplus data '<URL>'   # 注意:必须是 page URL,不是 group
 ```
 
-### `ERR: index API code != 0`
+### `ERR: API code != 0`
 
 `exit 21`。`_index.json` 拉不到,常见原因:
 - cookie 过期 → `mockplus cookie set`
@@ -75,7 +75,7 @@ mockplus get-data <APP_ID>:<PAGE_ID>
 若怀疑 cache 过期:
 
 ```bash
-mockplus get-data <URL> --refresh
+mockplus data '<URL>' --refresh
 mockplus tree <APP_ID> --refresh
 ```
 
@@ -87,47 +87,50 @@ mockplus tree <APP_ID> --refresh
 
 Mockplus 升级了 sketch schema,有新字段没消费。
 - 短期无影响(transform 仅丢弃未识别字段,不报错)
-- 长期需要更新 `_transform.py` 里的 `LAYER_HANDLED` / `BASIC_HANDLED` 集合,反馈 issue
+- 长期需要更新 `transform.py` 里的 `LAYER_HANDLED` / `BASIC_HANDLED` 集合,反馈 issue
 
-### `exit 50`:输出 schema 校验失败
+### `ERR: transform 输出校验失败`
 
-transform 输出不符合契约。多半是新字段触发的 bug。带 `--refresh` 重拉一次,贴 stderr 提 issue。
+`exit 2`。transform 输出不符合契约(`metadata.pageId` / `nodes` / `globalVars.styles` 类型不对)。多半是新字段触发的 bug。带 `--refresh` 重拉一次,贴 stderr 提 issue。
 
-### nodes 里出现 `type: "error"` 占位节点
+### nodes 里出现 `type: "_ERROR"` 占位节点
 
 单节点 transform panic,容错降级输出占位。其他节点不受影响。带相关 `data.json` 提 issue。
+
+### nodes 里出现 `type: "_UNKNOWN_<TYPE>"` 占位
+
+`REAL_TYPE_TO_V5` 映射不覆盖该类型。看 `_meta.warnings` 找具体 realType,在 `transform.py` 加映射或反馈 issue。
 
 ---
 
 ## 切图下载类
 
-### `download-assets`:`invalid host`
+### `mockplus download`:`目标切图: 0 个`
 
-`exit 2`。URL 不在 `img01.mockplus.cn` 或 `img02.mockplus.cn`。Mockplus CDN 切图地址固定,其他 host 不接受。
+`extract_slices` 没在 data.json 里找到 slice 节点。可能原因:
+- 该页没有切图(纯矢量/纯文字)
+- `--nodes hash1,hash2` 中的 hash 不匹配 — 检查 `data.yaml` 里的 `imageRef` 字段是否一致
 
-### `download-assets`:`unsupported format`
+### `mockplus download` 失败一部分 URL
 
-`exit 2`。`url` 或 `fileName` 不是 `.png` 结尾。首版仅支持 PNG。
-
-### `download-assets` 失败一部分 URL
-
-`failed` 数组里会列出失败的 URL 与原因。常见:
-- CDN 临时 5xx → 重跑 `download-assets`(已下载的会以 `cached: true` 跳过)
+stderr 列出 FAIL 的 hash + 错误消息。常见:
+- CDN 临时 5xx → 重跑 `download`(已下载的会自动跳过)
 - 境外节点丢包 → 挂回国代理
+- 文件权限错误 → 检查 `--out` 目录可写
 
 ---
 
 ## API 响应类
 
-### `ERR: API code=4001 message=未登录`
+### `ERR: API code=4001 msg=未登录`
 
 Cookie 完全无效。`mockplus cookie set` 重新写。
 
-### `ERR: API code=4030 message=无权访问该项目`
+### `ERR: API code=4030 msg=无权访问该项目`
 
 cookie 是别人的账号 / 该账号被踢出项目。换正确账号的 cookie。
 
-### `ERR: API code=非 0 message=...`
+### `ERR: API code=非 0 msg=...`
 
 直接看 message,通常是限流 / 项目被冻结等业务错误。
 
@@ -147,9 +150,19 @@ brew install python3
 apt-get install python3
 ```
 
-### `ImportError: cannot import name '_xxx'`
+### `ModuleNotFoundError: No module named 'yaml'`
 
-确保 cwd 在 skill 目录(`skills/mockplus-context/`)调用 `python3 scripts/mockplus.py`,或把 skill 内 `scripts/` 加入 `PYTHONPATH`。
+PyYAML 没装:
+
+```bash
+pip install PyYAML
+# 或
+pip install -r tests/requirements.txt
+```
+
+### `ImportError: cannot import name 'client'`
+
+确保 cwd 在仓库根目录调用 `python3 skills/mockplus-context/scripts/mockplus.py`,或把 skill 内 `scripts/` 加入 `PYTHONPATH`。
 
 ---
 

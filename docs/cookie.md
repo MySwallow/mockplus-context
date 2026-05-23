@@ -3,6 +3,16 @@
 `mockplus-context` 通过 Mockplus 的私有 cookie 调用 idoc API。
 本文档讲清楚:**怎么拿 cookie、怎么写入、怎么更新、怎么保证安全**。
 
+> **v0.4 → v0.5 迁移**:cookie 文件默认从 `skills/mockplus-context/config/cookie` 迁到系统级 `~/.config/mockplus/cookie`。如果你之前用的是仓库内路径,可以这样迁移:
+>
+> ```bash
+> mkdir -p ~/.config/mockplus && chmod 700 ~/.config/mockplus
+> mv skills/mockplus-context/config/cookie ~/.config/mockplus/cookie
+> chmod 600 ~/.config/mockplus/cookie
+> ```
+>
+> 或重跑 `mockplus cookie set` 一次。
+
 ## 为什么需要 cookie
 
 Mockplus 没有公开 API,也没有 OAuth / API Token。所有 idoc 接口都靠浏览器的会话 cookie
@@ -36,15 +46,12 @@ Mockplus 没有公开 API,也没有 OAuth / API Token。所有 idoc 接口都靠
 
 ```bash
 mockplus cookie set
-# [mockplus] 粘贴 cookie 字符串(单行),按 Enter:
+# 粘贴 cookie(单行),回车结束:
 # <粘贴你的 cookie 一行,回车>
-# [mockplus] 已写入 /path/to/mockplus-context/config/cookie (chmod 600)
-# [mockplus] 预估到期:2026-06-21T13:35:00+0800
-# [mockplus] 下一步建议:mockplus cookie test <APP_ID>
+# OK: cookie 已写入 /Users/xx/.config/mockplus/cookie
 ```
 
-**默认位置**:cookie 写到 **`<repo>/config/cookie`**(已加入 `.gitignore`)。
-这样每个 clone / worktree / 多账号场景下 cookie 互不干扰,也不会污染用户全局目录。
+**默认位置**:cookie 写到 **`~/.config/mockplus/cookie`**(系统级,跨多个 clone / install 共享)。
 要换位置用 `MOCKPLUS_COOKIE_FILE` 环境变量。
 
 ### 方式 B:从文件
@@ -64,18 +71,17 @@ shred -u /tmp/mp.cookie   # 或 rm -P
 
 ```bash
 export MOCKPLUS_COOKIE='_clck=...; mockuuid=...; ds.sid=...'
-mockplus get-data <URL>
+mockplus data <URL>
 ```
 
-**优先级**:`MOCKPLUS_COOKIE`(环境变量)> cookie 文件。
+**优先级**:`MOCKPLUS_COOKIE`(环境变量)> `MOCKPLUS_COOKIE_FILE` > 默认 `~/.config/mockplus/cookie`。
 
 ## 验证
 
 ```bash
 # 用任意一个你能访问的 APP_ID(从 URL 里 /app/XXX/ 段抠出)
 mockplus cookie test 5gAIPn9LE
-# [mockplus] 调 /api/v1/app/module/5gAIPn9LE/design
-# [mockplus] ✓ cookie 有效 (APP_ID=5gAIPn9LE, code=0)
+# OK: code=0 项目页面数=12
 ```
 
 如果报 `code != 0` 或非 0 退出:
@@ -86,14 +92,13 @@ mockplus cookie test 5gAIPn9LE
 
 ```bash
 mockplus cookie status
-# Cookie file:    /Users/xx/path/to/mockplus-context/config/cookie
-# File mode:      -rw-------
-# Set at:         2026-05-22T13:35:00+0800
-# Expires at:     2026-06-21T13:35:00+0800 (estimated ~30d)
-# Days remaining: 28.4
+# Path:    /Users/xx/.config/mockplus/cookie
+# Mode:    0o600
+# SetAt:   Thu May 22 13:35:00 2026
+# Expires: Sat Jun 21 13:35:00 2026 (28 天后)
 ```
 
-**注意**:`Days remaining` 是基于"假设 30 天"的估算,实际有效期可能更短或更长。
+**注意**:`Expires` 是基于"假设 30 天"的估算,实际有效期可能更短或更长。
 真正过期的判定标准是 `mockplus cookie test` 返回 `code != 0`。
 
 ## 更新 cookie(过期或主动轮换)
@@ -111,14 +116,14 @@ mockplus cookie set
 
 ```bash
 mockplus cookie clear
-# [mockplus] 已删除 /Users/xx/path/to/mockplus-context/config/cookie
+# OK: 已删除 /Users/xx/.config/mockplus/cookie
 ```
 
 ## 自定义存储位置
 
 ```bash
 # 单次
-MOCKPLUS_COOKIE_FILE=/path/to/cookie mockplus get-data <URL>
+MOCKPLUS_COOKIE_FILE=/path/to/cookie mockplus data <URL>
 
 # 永久(写到 ~/.zshrc / ~/.bashrc)
 export MOCKPLUS_COOKIE_FILE=$HOME/Secrets/mockplus.cookie
@@ -128,10 +133,10 @@ export MOCKPLUS_COOKIE_FILE=$HOME/Secrets/mockplus.cookie
 
 | 风险 | 措施 |
 |---|---|
-| cookie 泄露到 git | 默认存在 `<repo>/config/cookie`,**已在 `.gitignore` 里硬编码 `/config/cookie`** —— `git add .` 不会带进去 |
+| cookie 泄露到 git | 默认存在 `~/.config/mockplus/cookie`(系统级,不在仓库下) |
 | cookie 泄露到 shell history | **绝不要** `mockplus cookie set "_clck=..."` 这种位置参数。本工具也没设计这种接口——只接受 stdin / `--from-file` / 环境变量 |
 | cookie 泄露到日志 | 脚本所有日志走 stderr,从不打印 cookie 内容,debug 日志只打印 URL 不打印 header |
-| cookie 文件被其他用户读 | 自动 `chmod 600`(只有 owner 可读写) |
+| cookie 文件被其他用户读 | 自动 `chmod 600`(只有 owner 可读写),父目录 `chmod 700` |
 | 长期不轮换 | `cookie status` 显示剩余天数,过期前 `cookie set` 重写 |
 | Linux 多用户共享机器 | 把存储位置改到加密目录:`MOCKPLUS_COOKIE_FILE=$HOME/.ecryptfs/mockplus.cookie` |
 

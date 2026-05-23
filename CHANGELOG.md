@@ -4,18 +4,67 @@
 
 ## Unreleased
 
-### Fixed
-- CI 工作流(`.github/workflows/ci.yml`)从 v0.2 bash 实现的遗留路径(`bin/mockplus`、`scripts/validate.sh`、`tests/smoke.sh`)更新为 v0.4 Python 实现的 `pytest tests/`,并加 Python 3.8 / 3.11 / 3.12 矩阵测试
-- README 安装步骤的 git clone URL 从占位符 `<you>` 改为真实 `MySwallow`
-- `references/api-reference.md` 中 `MOCKPLUS_COOKIE_FILE` 默认值从模糊的 `<repo>/config/cookie` 改为精确的 `skills/mockplus-context/config/cookie`,并说明是基于 skill 目录而非仓库根
+(无未发布变更;v0.5.0 已经发布。)
+
+## v0.5.0 — 2026-05-23
+
+**合并最强子集:YAML 优先输出 + 一站式 all 命令 + 系统级 cookie。**
+
+### Breaking
+- 输出默认从 JSON 改 YAML(可用 `--format json` 切回)
+- CLI 命令重命名:`get-data` → `data`、`download-assets` → `download`、`inspect` → `data --stats`
+- cookie 文件默认路径从 `skills/mockplus-context/config/cookie` 迁到 `~/.config/mockplus/cookie`
+- `download` 接口从 `--downloads '[{url,fileName},...]'` 改为 `--nodes all|h1,h2`(从 YAML 里 `imageRef` 直取)
+- 删除 `inspect` 命令、`_explore.py`、`_schema.py`、`__init__.py`、`references/api-reference.md`(并入 SKILL.md)
+- token key 命名:textStyle 改用 sharedStyle.name(原 `text_001`);其他 fill/layout/stroke/effect 改 6 位序号(原 `fill_001` → `fill_000001`)
+- 节点字段:`bounds` 改为 `layout` 引用 + `globalVars.styles.layout_NNNNNN`;`text` 嵌套结构改为 `text + textStyle` 平铺;切图节点 `asset` 字段改为在 `fills` 数组里加 IMAGE fill
+- 退出码 `50`(schema 校验失败)废弃
+- cache 路径 `~/.cache/mockplus-context/` → `~/.cache/mockplus/`
+
+### Added
+- `all` 子命令:一站式 = data + download(all + design)
+- `download --include-design` 同时下整页截图 `design.png`
+- `data --stats`:nodes/styles/assets/unhandledFields 统计输出(替代 `inspect`)
+- `download --nodes hash,...`:按 hash 选切图,直接对接 YAML 里 `imageRef`
+- 颜色 alpha < 1 时输出 `rgba(r, g, b, a.xx)`(原 v0.4 是 `#RRGGBB (alpha=0.5)`)
+- REAL_TYPE_TO_V5 覆盖 `Path` / `path` / `MSShapeGroup`(统一映射为 VECTOR)
+- `sharedStyle.type` 大小写不敏感判断(实际值是 `TextStyle` 而非 `text`)
 
 ### Changed
-- README 添加 CI / License / Python 版本 badges
-- README "5 分钟上手" 步骤 4 补充 `<hash>` 切图 URL 的来源说明 + jq 示例
-- README "开发 / 测试" 说明 `jsonschema` 的可选用途
-- README 新增 "贡献" 章节(分支约定、commit 规范、breaking change 流程)
-- `SKILL.md` 输出 JSON 速览前增加"概念示意"说明,引导查 fixtures 看真实样例
-- `SKILL.md` 给 `inspect` 命令加场景注释(CI 回归检测)
+- Python 模块从 7 个合并到 4 个:`mockplus.py` / `cli.py` / `transform.py` / `client.py`(注:spec 原写 `io.py`,实际改名为 `client.py` 避开 Python 标准库 `io` 模块冲突)
+- SKILL.md 重写至 ~120 行(短 SKILL.md + `references/`)
+- fixtures `expected/*.json` → `expected/*.yaml`(5 份重生)
+- `tests/requirements.txt`:`pytest>=7` + `PyYAML>=6`(去掉 `jsonschema>=4`)
+
+### Removed
+- `inspect` 命令(合并到 `data --stats`)
+- v0.4 的 8 个老模块:`_api.py` / `_cookie.py` / `_assets.py` / `_transform.py` / `_tree.py` / `_schema.py` / `_explore.py` / `__init__.py`
+- `references/api-reference.md`(并入 SKILL.md)
+- `tests/test_schema.py`(对应砍掉的 `_schema.py`)
+
+### Added Tests
+- `tests/test_token_naming.py`:7 个用例覆盖 6 位序号、sharedStyle.name 命名、同名冲突后缀(`_2`/`_3`)、fingerprint 去重、layout 输出形态
+
+### Migration
+
+旧命令 → 新命令:
+
+| v0.4 | v0.5 |
+|---|---|
+| `mockplus get-data <URL>` | `mockplus data <URL>`(默认 YAML;要 JSON 加 `--format json`) |
+| `mockplus inspect <URL>` | `mockplus data <URL> --stats` |
+| `mockplus download-assets --downloads '[...]' --local-path X` | `mockplus download <URL> --nodes h1,h2 --out X` |
+| (无对应) | `mockplus all <URL>`(新一站式) |
+
+Cookie 迁移:
+
+```bash
+mkdir -p ~/.config/mockplus && chmod 700 ~/.config/mockplus
+mv skills/mockplus-context/config/cookie ~/.config/mockplus/cookie
+chmod 600 ~/.config/mockplus/cookie
+# 或者重跑一次 cookie set
+python3 skills/mockplus-context/scripts/mockplus.py cookie set
+```
 
 ## v0.4.0 — 2026-05-22
 

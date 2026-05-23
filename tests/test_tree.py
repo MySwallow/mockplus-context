@@ -3,29 +3,30 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skills" / "mockplus-context" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent
+                       / "skills" / "mockplus-context" / "scripts"))
 
-import _api
-import _tree
+import client
+import cli
 
 
 SAMPLE = json.load(open(Path(__file__).parent / "fixtures" / "_index-sample.json"))
 
 
 def test_flatten_pages_extracts_2_pages_2_groups():
-    pages, groups = _api.flatten_pages(SAMPLE)
+    pages, groups = client.flatten_pages(SAMPLE)
     assert len(pages) == 2
     assert len(groups) == 2
     assert {p["id"] for p in pages} == {"p-001", "p-003"}
 
 
 def test_tree_text_format_lists_all_nodes(capsys):
-    with patch("_tree.fetch_index", return_value=SAMPLE):
+    with patch("client.fetch_index", return_value=SAMPLE):
         class Args:
             app_id = "appX"
             format = "text"
             refresh = False
-        _tree.cmd_tree(Args())
+        cli.action_tree(Args())
     out = capsys.readouterr().out
     assert "📁 v1" in out
     assert "📁 采购模块" in out
@@ -39,12 +40,12 @@ def test_tree_text_format_lists_all_nodes(capsys):
 
 
 def test_tree_json_format_returns_structured(capsys):
-    with patch("_tree.fetch_index", return_value=SAMPLE):
+    with patch("client.fetch_index", return_value=SAMPLE):
         class Args:
             app_id = "appX"
             format = "json"
             refresh = False
-        _tree.cmd_tree(Args())
+        cli.action_tree(Args())
     out = json.loads(capsys.readouterr().out)
     assert out[0]["id"] == "g-root"
     assert out[0]["kind"] == "group"

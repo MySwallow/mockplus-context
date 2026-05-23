@@ -1,16 +1,15 @@
-"""assets 下载测试。用本地 http.server 起一个临时 PNG。"""
-import json
+"""client.download_slices 测试。用本地 http.server 起一个临时 PNG。"""
 import re
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skills" / "mockplus-context" / "scripts"))
-import _assets
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent
+                       / "skills" / "mockplus-context" / "scripts"))
+import client
 
 
-# 最小合法 PNG(1x1 透明)
 TINY_PNG = bytes.fromhex(
     "89504E470D0A1A0A0000000D49484452000000010000000108060000001F15C489"
     "0000000D4944415478DA63F8FFFF3F0005FE02FE9C5E1EFF0000000049454E44AE426082"
@@ -35,66 +34,59 @@ def _serve():
     return server
 
 
-def test_invalid_host_rejected(tmp_path, capsys):
-    class Args:
-        downloads = json.dumps([{"url": "https://evil.com/x.png", "fileName": "x.png"}])
-        local_path = str(tmp_path)
-    _assets.cmd_download_assets(Args())
-    out = json.loads(capsys.readouterr().out)
-    assert len(out["failed"]) == 1
-    assert out["failed"][0]["reason"] == "invalid host"
-
-
-def test_non_png_extension_rejected(tmp_path, capsys):
-    class Args:
-        downloads = json.dumps([{"url": "https://img02.mockplus.cn/x.svg", "fileName": "x.svg"}])
-        local_path = str(tmp_path)
-    _assets.cmd_download_assets(Args())
-    out = json.loads(capsys.readouterr().out)
-    assert out["failed"][0]["reason"] == "unsupported format"
-
-
-def test_filename_must_be_png(tmp_path, capsys):
-    class Args:
-        downloads = json.dumps([{"url": "https://img02.mockplus.cn/x.png", "fileName": "x.jpg"}])
-        local_path = str(tmp_path)
-    _assets.cmd_download_assets(Args())
-    out = json.loads(capsys.readouterr().out)
-    assert out["failed"][0]["reason"] == "filename must end with .png"
-
-
-def test_download_via_local_server(tmp_path, capsys, monkeypatch):
+def test_download_via_local_server(tmp_path):
     server = _serve()
     port = server.server_address[1]
-    # Monkeypatch host regex to accept localhost for this test
-    monkeypatch.setattr(_assets, "HOST_OK", re.compile(r"^http://127\.0\.0\.1:\d+/"))
-    class Args:
-        downloads = json.dumps([
-            {"url": f"http://127.0.0.1:{port}/a.png", "fileName": "a.png"},
-            {"url": f"http://127.0.0.1:{port}/b.png", "fileName": "b.png"},
-        ])
-        local_path = str(tmp_path)
-    _assets.cmd_download_assets(Args())
+    slices = [
+        {"hash": "abc123",
+         "bitmapURL": f"http://127.0.0.1:{port}/abc123.png",
+         "svgURL": ""},
+        {"hash": "def456",
+         "bitmapURL": f"http://127.0.0.1:{port}/def456.png",
+         "svgURL": ""},
+    ]
+    stats = client.download_slices(slices, tmp_path)
     server.shutdown()
-    out = json.loads(capsys.readouterr().out)
-    assert len(out["downloaded"]) == 2
-    assert (tmp_path / "a.png").exists()
-    assert (tmp_path / "b.png").exists()
+    assert stats["ok"] == 2 and stats["fail"] == 0
+    assert (tmp_path / "abc123.png").exists()
+    assert (tmp_path / "def456.png").exists()
 
 
-def test_download_skip_cached(tmp_path, capsys, monkeypatch):
-    """文件已存在 + size > 0 应该 cached=True 而不重新下载。"""
+def test_download_skip_cached(tmp_path):
     server = _serve()
     port = server.server_address[1]
-    monkeypatch.setattr(_assets, "HOST_OK", re.compile(r"^http://127\.0\.0\.1:\d+/"))
-    # 预先在 tmp_path 写一个 a.png
-    (tmp_path / "a.png").write_bytes(b"existing content")
-    class Args:
-        downloads = json.dumps([{"url": f"http://127.0.0.1:{port}/a.png", "fileName": "a.png"}])
-        local_path = str(tmp_path)
-    _assets.cmd_download_assets(Args())
+    (tmp_path / "abc.png").write_bytes(b"existing")
+    slices = [{"hash": "abc",
+               "bitmapURL": f"http://127.0.0.1:{port}/abc.png",
+               "svgURL": ""}]
+    stats = client.download_slices(slices, tmp_path)
     server.shutdown()
-    out = json.loads(capsys.readouterr().out)
-    assert out["downloaded"][0].get("cached") is True
-    # 文件没被覆盖
-    assert (tmp_path / "a.png").read_bytes() == b"existing content"
+    assert stats["cached"] == 1
+    assert (tmp_path / "abc.png").read_bytes() == b"existing"
+
+
+def test_extract_slices_all():
+    data = {
+        "layers": {"children": [
+            {"basic": {"name": "icon-a"}, "bounds": {"width": 24, "height": 24},
+             "slice": {"bitmapURL": "https://img02.mockplus.cn/idoc/sketch/h1/x.png",
+                       "svgURL": "https://img02.mockplus.cn/idoc/sketch/h1/x.svg"}},
+            {"basic": {"name": "no-slice"}, "bounds": {"width": 100, "height": 50}},
+        ]}
+    }
+    slices = client.extract_slices(data)
+    assert len(slices) == 1
+    assert slices[0]["hash"] == "h1"
+
+
+def test_extract_slices_filter_by_hash():
+    data = {
+        "layers": {"children": [
+            {"basic": {"sourceID": "s1"},
+             "slice": {"bitmapURL": "https://img02.mockplus.cn/idoc/sketch/h1/a.png"}},
+            {"basic": {"sourceID": "s2"},
+             "slice": {"bitmapURL": "https://img02.mockplus.cn/idoc/sketch/h2/b.png"}},
+        ]}
+    }
+    s = client.extract_slices(data, wanted={"h1"})
+    assert len(s) == 1 and s[0]["hash"] == "h1"
