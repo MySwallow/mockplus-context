@@ -66,8 +66,8 @@ mockplus cookie {set|test|status|clear|path}
 
 ```yaml
 metadata:
-  name: 采购申请单列表（老板）
-  pageId: -hKyUPiOs
+  name: Sample Page
+  pageId: pgA1bC2X3
   device: ios1x
   size: { width: 375, height: 812 }
   backgroundColor: '#f5f5f5'
@@ -76,12 +76,12 @@ metadata:
 
 nodes:
   - id: <UUID>
-    name: 合并转采购
+    name: Submit Action
     type: TEXT                         # FRAME/TEXT/INSTANCE/RECTANGLE/ELLIPSE/VECTOR
     layout: layout_000007              # 引用 globalVars.styles
     fills: fill_000001                 # 可选
-    text: "合并转采购"
-    textStyle: 01文字色1/16px/semibold/居中对齐 Style   # 设计师命名
+    text: "Submit Action"
+    textStyle: Body/16px/Semibold/Center Style   # 设计师命名
     children: [...]
 
 globalVars:
@@ -94,7 +94,7 @@ globalVars:
       mode: none
       locationRelativeToParent: { x: 266, y: 737 }
       dimensions: { width: 80, height: 22 }
-    01文字色1/16px/semibold/居中对齐 Style:
+    Body/16px/Semibold/Center Style:
       fontFamily: PingFang SC
       fontWeight: 600
       fontSize: 16

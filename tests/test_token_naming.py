@@ -16,8 +16,8 @@ def test_fill_uses_6_digit_seq():
 def test_textstyle_uses_shared_style_name():
     tt = T.TokenTable()
     spec = {"font": {"size": 16, "color": {"value": {"r": 0, "g": 0, "b": 0, "a": 1}}}}
-    k = tt.text_style(spec, preferred_name="01文字色1/16px/semibold/居中对齐 Style")
-    assert k == "01文字色1/16px/semibold/居中对齐 Style"
+    k = tt.text_style(spec, preferred_name="Body/16px/Semibold/Center Style")
+    assert k == "Body/16px/Semibold/Center Style"
 
 
 def test_textstyle_falls_back_to_seq_when_no_shared():

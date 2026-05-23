@@ -609,7 +609,7 @@ git add skills/mockplus-context/scripts/transform.py
 | stroke | `stroke_NNNNNN` | `stroke_000001` |
 | effect | `effect_NNNNNN` | `effect_000001` |
 | layout | `layout_NNNNNN` | `layout_000007` |
-| textStyle(有 sharedStyle) | sharedStyle.name 原样 | `01文字色1/16px/semibold/居中对齐 Style` |
+| textStyle(有 sharedStyle) | sharedStyle.name 原样 | `Body/16px/Semibold/Center Style` |
 | textStyle(无 sharedStyle) | `textStyle_NNNNNN` | `textStyle_000001` |
 
 冲突场景(两个 sharedStyle 同名 + spec 不同):后到的加 `_2`/`_3` 后缀。
@@ -2168,8 +2168,8 @@ def test_fill_uses_6_digit_seq():
 def test_textstyle_uses_shared_style_name():
     tt = T.TokenTable()
     spec = {"font": {"size": 16, "color": {"value": {"r": 0, "g": 0, "b": 0, "a": 1}}}}
-    k = tt.text_style(spec, preferred_name="01文字色1/16px/semibold/居中对齐 Style")
-    assert k == "01文字色1/16px/semibold/居中对齐 Style"
+    k = tt.text_style(spec, preferred_name="Body/16px/Semibold/Center Style")
+    assert k == "Body/16px/Semibold/Center Style"
 
 
 def test_textstyle_falls_back_to_seq_when_no_shared():
@@ -2304,8 +2304,8 @@ mockplus cookie {set|test|status|clear|path}
 
 ```yaml
 metadata:
-  name: 采购申请单列表（老板）
-  pageId: -hKyUPiOs
+  name: Sample Page
+  pageId: pgA1bC2X3
   device: ios1x
   size: { width: 375, height: 812 }
   backgroundColor: '#f5f5f5ff'
@@ -2314,12 +2314,12 @@ metadata:
 
 nodes:
   - id: <UUID>
-    name: 合并转采购
+    name: Submit Action
     type: TEXT                         # FRAME/TEXT/INSTANCE/RECTANGLE/ELLIPSE/VECTOR
     layout: layout_000007              # 引用 globalVars.styles
     fills: fill_000001                 # 可选
-    text: "合并转采购"
-    textStyle: 01文字色1/16px/semibold/居中对齐 Style   # 设计师命名
+    text: "Submit Action"
+    textStyle: Body/16px/Semibold/Center Style   # 设计师命名
     children: [...]
 
 globalVars:
@@ -2332,7 +2332,7 @@ globalVars:
       mode: none
       locationRelativeToParent: { x: 266, y: 737 }
       dimensions: { width: 80, height: 22 }
-    01文字色1/16px/semibold/居中对齐 Style:
+    Body/16px/Semibold/Center Style:
       fontFamily: PingFang SC
       fontWeight: 600
       fontSize: 16
@@ -2766,8 +2766,8 @@ cat page.yaml | head -30
 
 ```yaml
 metadata:
-  name: 采购申请单列表（老板）
-  pageId: -hKyUPiOs
+  name: Sample Page
+  pageId: pgA1bC2X3
   device: ios1x
   size: { width: 375, height: 812 }
 nodes:
@@ -2809,9 +2809,9 @@ ls ./design-cache
 
 ```bash
 mockplus tree <APP_ID>
-# 📁 v1.7
-#   📁 V1.7采购申请列表
-#     📄 采购申请单列表(老板)  [-hKyUPiOs]  (375x812)
+# 📁 Module
+#   📁 Module Subgroup
+#     📄 Sample Page  [pgA1bC2X3]  (375x812)
 #     📄 ...
 
 # JSON 格式给程序处理
