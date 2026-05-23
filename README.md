@@ -1,5 +1,9 @@
 # mockplus-context
 
+[![CI](https://github.com/MySwallow/mockplus-context/actions/workflows/ci.yml/badge.svg)](https://github.com/MySwallow/mockplus-context/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
 > 从 Mockplus(摹客)设计稿抓取**结构化 JSON + 切图**。Python 单文件 skill,无运行时外部依赖。
 
 供 Claude / Cursor 等 LLM 直接消费。粘贴一个 Mockplus develop URL,LLM 就能拿到分层 JSON(metadata + globalVars + nodes),按需下载切图,然后还原 UI 代码。
@@ -41,7 +45,7 @@ mockplus-context/                          # repo root
 只要 Python 3.8+ 即可:
 
 ```bash
-git clone https://github.com/<you>/mockplus-context.git
+git clone https://github.com/MySwallow/mockplus-context.git
 cd mockplus-context
 python3 skills/mockplus-context/scripts/mockplus.py --help
 ```
@@ -67,7 +71,9 @@ mockplus cookie test <任意 APP_ID>
 # 3. 拉单页结构化 JSON
 mockplus get-data 'https://app.mockplus.cn/app/<APP_ID>/develop/design/<PAGE_ID>' > page.json
 
-# 4. 拉切图(把 page.json 里 asset.url 喂过来)
+# 4. 决定要哪些切图,起语义化文件名,下载
+#    切图 url 来源:page.json 中 nodes[*].asset.url(可用 jq 提取,或让 LLM 自动收集)
+#    例如:jq '.nodes | .. | objects | select(.asset) | .asset.url' page.json
 mockplus download-assets \
   --downloads '[{"url":"https://img02.mockplus.cn/.../<hash>.png","fileName":"nav-back.png"}]' \
   --local-path ./assets
@@ -113,9 +119,29 @@ cookie 怎么从浏览器抓取,详见 `docs/cookie.md`。
 ## 开发 / 测试
 
 ```bash
+# 装测试依赖(pytest + jsonschema,后者用于 _schema.py 的可选完整校验)
 python3 -m pip install --user -r tests/requirements.txt
+
+# 跑测试
 python3 -m pytest tests/ -v
 ```
+
+> `jsonschema` 装了之后,`_schema.py` 会在 `get-data` 输出前做完整 schema 校验。不装也能用(降级为 lite 校验)。
+
+## 贡献
+
+欢迎 PR。建议流程:
+
+1. Fork 后拉本地;基于 `main` 拉一个 feature 分支
+2. 写代码 + 加 / 改 pytest 测试(`tests/fixtures/` + `tests/test_*.py`)
+3. 跑 `python3 -m pytest tests/ -v` 全绿
+4. 在 `CHANGELOG.md` 的 `## Unreleased` 段加一行说明变更
+5. 提 PR,标题用约定式提交(feat / fix / refactor / docs / test / chore)
+
+修改输出 JSON 结构属于 **breaking change**,需要:
+- 升级 fixtures (`tests/fixtures/expected/*.json`)
+- 在 CHANGELOG 标注 `**Breaking**`
+- 提供 migration 说明
 
 ## 许可证
 

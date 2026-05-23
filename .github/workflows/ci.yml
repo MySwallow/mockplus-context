@@ -7,38 +7,32 @@ on:
     branches: [main]
 
 jobs:
-  validate:
-    name: 仓库校验(bash + shellcheck + smoke)
-    runs-on: ubuntu-latest
+  test:
+    name: pytest (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.8", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
 
-      - name: 装 shellcheck
-        run: sudo apt-get install -y shellcheck
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: 显示版本
         run: |
-          bash --version | head -n1
           python3 --version
-          shellcheck --version | head -n2
+          uname -a
 
-      - name: chmod
-        run: chmod +x bin/mockplus scripts/install scripts/validate.sh tests/smoke.sh
+      - name: 装测试依赖
+        run: python3 -m pip install --upgrade pip && pip install -r tests/requirements.txt
 
-      - name: 跑 validate.sh
-        run: scripts/validate.sh
+      - name: 跑 pytest
+        run: python3 -m pytest tests/ -v
 
-      - name: 跑 smoke.sh(再单独跑一次确认)
-        run: tests/smoke.sh
-
-  macos-smoke:
-    name: macOS 烟测
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: chmod
-        run: chmod +x bin/mockplus scripts/install scripts/validate.sh tests/smoke.sh
-
-      - name: 跑 validate.sh(无 shellcheck)
-        run: scripts/validate.sh
+      - name: 校验 CLI 能跑起来(--help 不依赖网络)
+        run: python3 skills/mockplus-context/scripts/mockplus.py --help

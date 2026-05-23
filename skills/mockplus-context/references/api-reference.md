@@ -7,7 +7,7 @@
 | 变量 | 默认 | 说明 |
 |---|---|---|
 | `MOCKPLUS_COOKIE` | (空) | 优先于文件 |
-| `MOCKPLUS_COOKIE_FILE` | `<repo>/config/cookie` | cookie 文件位置 |
+| `MOCKPLUS_COOKIE_FILE` | `skills/mockplus-context/config/cookie` | cookie 文件位置(基于 `_cookie.py` 所在的 skill 目录,**不是仓库根**) |
 | `MOCKPLUS_OUT_ROOT` | `~/.cache/mockplus-context` | API 响应 cache 根 |
 
 ## 退出码

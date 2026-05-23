@@ -1,5 +1,22 @@
 # Changelog
 
+格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/),版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
+
+## Unreleased
+
+### Fixed
+- CI 工作流(`.github/workflows/ci.yml`)从 v0.2 bash 实现的遗留路径(`bin/mockplus`、`scripts/validate.sh`、`tests/smoke.sh`)更新为 v0.4 Python 实现的 `pytest tests/`,并加 Python 3.8 / 3.11 / 3.12 矩阵测试
+- README 安装步骤的 git clone URL 从占位符 `<you>` 改为真实 `MySwallow`
+- `references/api-reference.md` 中 `MOCKPLUS_COOKIE_FILE` 默认值从模糊的 `<repo>/config/cookie` 改为精确的 `skills/mockplus-context/config/cookie`,并说明是基于 skill 目录而非仓库根
+
+### Changed
+- README 添加 CI / License / Python 版本 badges
+- README "5 分钟上手" 步骤 4 补充 `<hash>` 切图 URL 的来源说明 + jq 示例
+- README "开发 / 测试" 说明 `jsonschema` 的可选用途
+- README 新增 "贡献" 章节(分支约定、commit 规范、breaking change 流程)
+- `SKILL.md` 输出 JSON 速览前增加"概念示意"说明,引导查 fixtures 看真实样例
+- `SKILL.md` 给 `inspect` 命令加场景注释(CI 回归检测)
+
 ## v0.4.0 — 2026-05-22
 
 **skill 目录纯化:只保留 LLM runtime 直接消费的内容。**

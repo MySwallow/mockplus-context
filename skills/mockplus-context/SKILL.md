@@ -44,14 +44,16 @@ mockplus.py get-data <URL>                       # 单页结构化 JSON 到 stdo
 mockplus.py tree <APP_ID> [--format text|json]   # 项目结构(text emoji / json 树)
 mockplus.py download-assets --downloads '[...]' --local-path <DIR>
 mockplus.py cookie {set|test|status|clear|path}  # cookie 管理(只给真人用,LLM 不调)
-mockplus.py inspect <URL>                        # 统计 + 异常(回归检测辅助)
+mockplus.py inspect <URL>                        # 统计 + 异常(CI 回归检测;Mockplus 升级 schema 时立刻可见)
 ```
 
 > Mockplus API 的物理约束:只能按 **整页(page)** 拉数据。Group/sub-group 没有节点级 API,所以 `get-data` 只接受 page URL;group 浏览靠 `tree`。
 
 ## 输出 JSON 速览(`get-data`)
 
-```json
+> 以下是**字段名概念示意**(不是合法 JSON,只列每段会出现哪些 key)。真实输出样例跑 `mockplus inspect <URL>` 自检,或读 `tests/fixtures/expected/*.json`。
+
+```jsonc
 {
   "metadata": {
     "appId", "pageId", "name", "device", "canvas", "backgroundColor",
