@@ -1,0 +1,230 @@
+metadata:
+  name: test
+  path: test
+  pageId: p-test
+  appId: test-app
+  device: ios1x
+  size:
+    width: 375
+    height: 812
+  backgroundColor: '#F5F5F5'
+  components:
+    美孚门店通规范/07按钮/01吸底/03结算类/全选+数价:
+      id: E442B0B5-32A4-48BB-ACE2-FAAA59393AD4
+      name: 07按钮/01吸底/03结算类/全选+数价
+      libraryName: 美孚门店通规范
+nodes:
+- id: 9A894626-5654-4ACE-9C70-217D7BEE7942
+  name: 已经到底了~
+  type: TEXT
+  layout: layout_000001
+  textStyle: 03文字色3/12px/regular/居中对齐 Style
+  text: 已经到底了~
+- id: 3DDC4698-9083-427D-B791-46C52A625B4D
+  name: 矩形
+  type: VECTOR
+  layout: layout_000002
+  fills: fill_000001
+- id: 79F6C990-FFA1-48F3-9AB7-5C8047C31D80
+  name: Home Indicator
+  type: VECTOR
+  layout: layout_000003
+  fills: fill_000002
+  borderRadius: 100px
+- id: 7EE75B8D-7B0E-4B2C-8BEF-57ADD7070551
+  name: 按钮/背景/其它iPhone
+  type: VECTOR
+  layout: layout_000004
+  fills: fill_000003
+  borderRadius: 8px
+- id: 02938A52-55B5-40AA-B5DC-5ECA69E98108
+  name: 背景
+  type: VECTOR
+  layout: layout_000005
+  fills: fill_000004
+  effects: effect_000001
+- id: FB632493-1E3B-4E3F-A85C-A9D8431C19D4
+  name: Border
+  type: VECTOR
+  opacity: 0.4
+  layout: layout_000006
+  strokes: stroke_000001
+- id: A91C3D46-C1B0-4087-863E-7183D1D8C5B0
+  name: 路径备份
+  type: VECTOR
+  layout: layout_000007
+  fills: fill_000005
+- id: 079AACFE-6C8C-4823-BA15-D6CDEFE7A04D
+  name: 形状结合
+  type: VECTOR
+  layout: layout_000008
+  fills: fill_000003
+- id: 0A10D202-AE7F-4271-BBF9-129C9DCFB1BE
+  name: 07按钮/01吸底/03结算类/全选+数价
+  type: INSTANCE
+  layout: layout_000009
+  componentId: 美孚门店通规范/07按钮/01吸底/03结算类/全选+数价
+  children:
+  - id: 150B9D4D-E722-4BF2-AB7B-0467C1334A0D
+    name: 页面内
+    type: TEXT
+    layout: layout_000010
+    textStyle: 09白色/16px/semibold/居中对齐 Style
+    text: 合并转采购
+globalVars:
+  styles:
+    layout_000001:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 155
+        y: 440
+      dimensions:
+        width: 66
+        height: 17
+    03文字色3/12px/regular/居中对齐 Style:
+      fontSize: 12
+      fontFamily: PingFang SC
+      fontWeight: 400
+      fontStyle: Regular
+      color: '#999999'
+      lineHeight: 17
+      letterSpacing: 0
+      textAlignHorizontal: CENTER
+    layout_000002:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 0
+        y: 428
+      dimensions:
+        width: 375
+        height: 48
+    fill_000001:
+    - '#F5F5F5'
+    layout_000003:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 121
+        y: 799
+      dimensions:
+        width: 134
+        height: 5
+    fill_000002:
+    - '#000000'
+    layout_000004:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 249
+        y: 726
+      dimensions:
+        width: 114
+        height: 44
+    fill_000003:
+    - '#0C479D'
+    layout_000005:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 0
+        y: 108
+      dimensions:
+        width: 375
+        height: 44
+    fill_000004:
+    - '#FFFFFF'
+    effect_000001:
+      type: inside
+      offsetX: 0
+      offsetY: -0.5
+      blur: 0
+      spread: 0
+      color: '#EEEEEE'
+    layout_000006:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 346
+        y: 4
+      dimensions:
+        width: 22
+        height: 10.5
+    stroke_000001:
+      width: 1
+      color: '#000000'
+      position: inside
+    layout_000007:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 18.0
+        y: 33.0
+      dimensions:
+        width: 10.5
+        height: 18.5
+    fill_000005:
+    - '#262626'
+    layout_000008:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 13.5
+        y: 779.5
+      dimensions:
+        width: 17.0
+        height: 17.0
+    layout_000009:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 0
+        y: 718
+      dimensions:
+        width: 375
+        height: 94
+    layout_000010:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 266
+        y: 737
+      dimensions:
+        width: 80
+        height: 22
+    09白色/16px/semibold/居中对齐 Style:
+      fontSize: 16
+      fontFamily: PingFang SC
+      fontWeight: 600
+      fontStyle: Semibold
+      color: '#FFFFFF'
+      lineHeight: 22
+      textAlignHorizontal: CENTER
+_meta:
+  transformVersion: 0.5.0
+  sketchPluginVersion: 5.0.28
+  documentVersion: '1.0'
+  inputFieldsTotal: 164
+  unhandledFields: []
+  warnings: []

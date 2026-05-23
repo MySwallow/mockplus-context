@@ -1,52 +1,82 @@
 # Examples
 
-## 1. 还原单页 UI
+端到端调用样例(v0.5)。
+
+## 例 1:单页拿 YAML
 
 ```bash
-# 1. 拿结构化 JSON
-mockplus get-data 'https://app.mockplus.cn/app/5gAIPn9LE/develop/design/0-ITsFIbmL' > page.json
-
-# 2. 在 page.json 里找 asset.url(切图),也找 metadata.pageImage.url(整页图)
-jq '.nodes | .. | objects | select(.asset) | .asset.url' page.json
-
-# 3. 让 LLM 决定要哪些切图,起语义化文件名,下载
-mockplus download-assets \
-  --downloads '[
-    {"url":"https://img02.mockplus.cn/idoc/sketch/abc.../...png","fileName":"nav-back.png"},
-    {"url":"https://img02.mockplus.cn/idoc/sketch/def.../...png","fileName":"submit-icon.png"}
-  ]' \
-  --local-path ./assets
+mockplus data 'https://app.mockplus.cn/app/<APP>/develop/design/<PAGE>' --out page.yaml
+cat page.yaml | head -30
 ```
 
-## 2. 批量浏览一个分组
+输出片段:
+
+```yaml
+metadata:
+  name: 采购申请单列表（老板）
+  pageId: -hKyUPiOs
+  device: ios1x
+  size: { width: 375, height: 812 }
+nodes:
+  - id: <UUID>
+    name: 顶栏
+    type: FRAME
+    layout: layout_000001
+    children: [...]
+globalVars:
+  styles:
+    fill_000001:
+      - '#FFFFFF'
+    layout_000001:
+      mode: none
+      dimensions: { width: 375, height: 64 }
+```
+
+## 例 2:按 hash 下指定切图
+
+LLM 在 page.yaml 里看到节点用 `fills: fill_000003`,而 `globalVars.styles.fill_000003` 是 `[{type: IMAGE, imageRef: 2b417ea8...}]`,则:
 
 ```bash
-# 看项目结构(text 或 json 格式都可)
-mockplus tree 5gAIPn9LE
-# 或解析 JSON 拿到具体 page id 列表:
-mockplus tree 5gAIPn9LE --format json | \
-  jq -r '.. | objects | select(.kind=="page") | .id'
-
-# 决定要某几页之后,循环 get-data
-for pid in p-001 p-002 p-003; do
-  mockplus get-data 5gAIPn9LE:$pid > pages/$pid.json
-done
+mockplus download '<URL>' --nodes 2b417ea8... --out ./assets
+ls ./assets
+# 2b417ea8....png
+# 2b417ea8....svg(若 CDN 有)
+# assets-manifest.json
 ```
 
-## 3. 检测 Mockplus 是否升级了 schema
+## 例 3:一站式 + 视觉对照
 
 ```bash
-mockplus inspect 5gAIPn9LE:0-ITsFIbmL | jq '._meta.unhandledFields // empty'
-# 空 → schema 没变
-# 非空 → 有新字段没消费,需要更新 _transform.py
+mockplus all '<URL>' ./design-cache
+ls ./design-cache
+# data.yaml  design.png  assets/
 ```
 
-## 4. CI 中用
+## 例 4:URL 是 group 时先用 tree
 
 ```bash
-export MOCKPLUS_COOKIE='<from secret>'
-mockplus cookie test $APP_ID || exit 1
-mockplus get-data $URL > artifact.json
+mockplus tree <APP_ID>
+# 📁 v1.7
+#   📁 V1.7采购申请列表
+#     📄 采购申请单列表(老板)  [-hKyUPiOs]  (375x812)
+#     📄 ...
+
+# JSON 格式给程序处理
+mockplus tree <APP_ID> --format json | jq -r '.. | objects | select(.kind=="page") | "\(.id) \(.name)"'
 ```
 
-环境变量优先于文件,适合无状态 CI。
+## 例 5:回归检测 + 统计
+
+```bash
+mockplus data '<URL>' --stats --out /tmp/page.yaml
+# stderr 含:
+# ---- stats ----
+# {
+#   "nodes": 142,
+#   "styles": 38,
+#   "assetsImages": 7,
+#   "typesSeen": {"FRAME": 23, "TEXT": 89, "INSTANCE": 12, ...},
+#   "unhandledFields": [],
+#   "warnings": []
+# }
+```

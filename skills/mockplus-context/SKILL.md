@@ -1,112 +1,121 @@
 ---
 name: mockplus-context
-description: 从 Mockplus(摹客 app.mockplus.cn)设计稿抓取结构化 JSON 与切图。用于以下场景,即使用户没明说"用 Mockplus 工具":粘贴 `https://app.mockplus.cn/app/<APPID>/develop/design/<PAGEID>` 形式的 URL、要求"读 Mockplus 设计稿"、"按 Mockplus 还原 UI"、"导出 Mockplus 切图"、"把这个 Mockplus 页面变成 Vue/Flutter/小程序",或者从 Mockplus URL 推断页面 ID/项目结构。LLM 拿到分层 JSON(metadata + globalVars + nodes)即可直接还原,无需解析 sketch 原生 JSON。
+description: 从 Mockplus(摹客 app.mockplus.cn)设计稿抓取**结构化 YAML + 切图**。**触发场景**:用户给出 Mockplus develop URL(形如 `https://app.mockplus.cn/app/<APPID>/develop/design/<PAGEID>`)、要求"读 Mockplus 设计稿"、"按 Mockplus 还原 UI"、"导出 Mockplus 切图"、把 Mockplus 页面转 Vue/Flutter/小程序。LLM 拿到 YAML(metadata + nodes + globalVars.styles)可直接生成代码,无需解析 sketch 原始 JSON,比让 LLM 看 PNG 截图精度高一个数量级。
 ---
 
-# Mockplus Context
+# Mockplus Context (v0.5.0)
 
-把 Mockplus develop URL 转换为结构化 JSON + 本地切图。
+把 Mockplus develop URL 转换为**结构化 YAML**,LLM 直接消费。
 
 启动时声明:**"Using mockplus-context to extract <PAGE_ID> from Mockplus."**
 
 ## 何时触发
 
-- 用户给出 Mockplus develop URL:`https://app.mockplus.cn/app/<APPID>/develop/design/<TARGET_ID>`
+- 用户给的输入是 `https://app.mockplus.cn/app/<APPID>/develop/design/<TARGET_ID>` 形式的 URL
 - 用户要"读 Mockplus 设计稿"、"按 Mockplus 还原 UI"、"导出 Mockplus 切图"
-- 用户要把 Mockplus 页面转 Vue / Flutter / 小程序 / 任意前端代码
+- 任何后续要基于 Mockplus 数据生成代码(Vue / React / Flutter / 小程序)的前置步骤
 
-**不触发**:
-- 输入只是一张孤立 PNG → 让用户先找到对应 Mockplus 页面 URL
-- 输入不是 mockplus.cn 域 → 此 skill 不适用
+**不触发:**
+- 输入是 Figma URL(用 `figma-context` MCP)
+- 输入只是一张孤立 PNG(让用户先找到对应 Mockplus 页面 URL)
 
-## 前置:cookie 配置(用户一次性)
+## 前置条件(用户一次性配置 cookie)
 
 ```bash
-python3 scripts/mockplus.py cookie set
-# 浏览器(已登录 mockplus.cn) F12 → Application → Cookies → app.mockplus.cn
-# 把全部 cookie 拼成一行粘贴
+python3 skills/mockplus-context/scripts/mockplus.py cookie set
+# 浏览器(已登录 mockplus.cn)F12 → Application → Cookies → app.mockplus.cn
+# 把全部 cookie 拼成一行粘贴,回车结束
 ```
 
-Cookie 有效期约 30 天,过期重新 `set`。详细的浏览器抓 cookie 步骤是给真人用户看的,不在 LLM 范围。
+Cookie 默认存到 `~/.config/mockplus/cookie`,有效期约 30 天。401 时让用户 `cookie set` 重配。
 
 ## LLM 工作流(收到 URL 时按这个顺序)
 
-1. **不确定 page id**(URL 指向 group 或只有 APP_ID):跑 `python3 scripts/mockplus.py tree <APP_ID>` 浏览结构,从树中选出具体 page id。
-2. **URL 指向 page**:跑 `python3 scripts/mockplus.py get-data <URL>` 拿结构化 JSON。
-3. **扫输出 JSON 的 nodes**,收集所有 `asset.url`(切图)和 `metadata.pageImage.url`(整页效果图)。
-4. **语义化命名后下载**:`python3 scripts/mockplus.py download-assets --downloads '[...]' --local-path <DIR>`。
-5. 进入下游(代码生成、还原对照等)。
+1. **检查 cookie**:`mockplus cookie status`,未配置则引导用户 `cookie set`
+2. **若 URL 不确定是 page**(指向 group / 只有 APP_ID):`mockplus tree <APP_ID>` 浏览,从树里挑出具体 page id
+3. **拿 YAML 数据**:`mockplus data <URL> --out page.yaml`(默认 YAML)
+4. **扫 YAML 找切图**:看 `globalVars.styles` 里 `type: IMAGE` 的 fill,收集 `imageRef: <hash>`
+5. **按需下切图**:`mockplus download <URL> --nodes <hash1>,<hash2> --out ./assets`
+6. **进入下游**(代码生成 / 对照还原等)
 
-## 命令参考
+要视觉对照?加 `--include-design` 或直接 `mockplus all <URL>` 一站式拿齐。
+
+## 命令速查
 
 ```bash
-mockplus.py get-data <URL>                       # 单页结构化 JSON 到 stdout
-mockplus.py tree <APP_ID> [--format text|json]   # 项目结构(text emoji / json 树)
-mockplus.py download-assets --downloads '[...]' --local-path <DIR>
-mockplus.py cookie {set|test|status|clear|path}  # cookie 管理(只给真人用,LLM 不调)
-mockplus.py inspect <URL>                        # 统计 + 异常(CI 回归检测;Mockplus 升级 schema 时立刻可见)
+mockplus data <URL> [--out PATH] [--format yaml|json] [--stats] [--refresh]
+mockplus download <URL> [--nodes all|h1,h2] [--out DIR] [--include-design]
+mockplus all <URL> [<OUT_DIR>]              # = data + download(all + design)
+mockplus tree <APP_ID> [--format text|json] [--refresh]
+mockplus cookie {set|test|status|clear|path}
 ```
 
-> Mockplus API 的物理约束:只能按 **整页(page)** 拉数据。Group/sub-group 没有节点级 API,所以 `get-data` 只接受 page URL;group 浏览靠 `tree`。
+> Mockplus API 物理约束:只能按**整页(page)** 拉数据。Group/sub-group 没有节点级 API,所以 `data` 只接受 page URL,group 浏览靠 `tree`。
 
-## 输出 JSON 速览(`get-data`)
+## 输出 YAML 速览(`data` 产物)
 
-> 以下是**字段名概念示意**(不是合法 JSON,只列每段会出现哪些 key)。真实输出样例跑 `mockplus inspect <URL>` 自检,或读 `tests/fixtures/expected/*.json`。
+```yaml
+metadata:
+  name: 采购申请单列表（老板）
+  pageId: -hKyUPiOs
+  device: ios1x
+  size: { width: 375, height: 812 }
+  backgroundColor: '#f5f5f5'
+  components:                          # SymbolInstance 反推
+    <libId>/<path>: { id, name, libraryName }
 
-```jsonc
-{
-  "metadata": {
-    "appId", "pageId", "name", "device", "canvas", "backgroundColor",
-    "artboardScale", "pluginVersion", "pageImage"
-  },
-  "globalVars": {
-    "styles": {
-      "fill_001":   { "type": "color", "color": "#rrggbbaa" },
-      "text_001":   { "fontFamily", "fontSize", "fontWeight", "lineHeight", "color" },
-      "shadow_001": { "color", "offsetX", "offsetY", "blur", "spread" },
-      "stroke_001": { "color", "width", "position" }
-    },
-    "sharedStyles": {
-      "<uuid>": { "displayName", "kind", "stylesRef": ["fill_001", "text_002", ...] }
-    }
-  },
-  "nodes": [
-    {
-      "id", "name", "type", "realType",
-      "bounds": { "top", "left", "width", "height" },
-      "fills", "strokes", "radius", "shadows", "sharedStyle",
-      "text", "sourceComponent", "library", "symbol", "asset",
-      "children": [...]
-    }
-  ],
-  "_meta": {
-    "transformVersion", "sketchPluginVersion", "documentVersion",
-    "inputFieldsTotal", "unhandledFields", "warnings"
-  }
-}
+nodes:
+  - id: <UUID>
+    name: 合并转采购
+    type: TEXT                         # FRAME/TEXT/INSTANCE/RECTANGLE/ELLIPSE/VECTOR
+    layout: layout_000007              # 引用 globalVars.styles
+    fills: fill_000001                 # 可选
+    text: "合并转采购"
+    textStyle: 01文字色1/16px/semibold/居中对齐 Style   # 设计师命名
+    children: [...]
+
+globalVars:
+  styles:
+    fill_000003:                       # 切图填充
+      - type: IMAGE
+        imageRef: 2b417ea8...          # ← LLM 拿这个调 download
+        scaleMode: FILL
+    layout_000007:
+      mode: none
+      locationRelativeToParent: { x: 266, y: 737 }
+      dimensions: { width: 80, height: 22 }
+    01文字色1/16px/semibold/居中对齐 Style:
+      fontFamily: PingFang SC
+      fontWeight: 600
+      fontSize: 16
+
+_meta:
+  unhandledFields: []                  # Mockplus schema 升级时这里会列字段
 ```
 
-命令完整签名与字段映射规则查 `references/api-reference.md`。端到端调用样例查 `references/examples.md`。遇到错误信息查 `references/troubleshooting.md`。
-
-## 关键设计
-
-- **bounds 沿用 Sketch 原生** `{top, left, width, height}`,LLM 写 CSS 直觉一致
-- **type / realType 双轨**:`type` 粗类(group/text/rect/...,LLM 用来选标签),`realType` 细类(Artboard/SymbolInstance/...,LLM debug 用)
-- **globalVars 去重**:fill/text/shadow/stroke 用指纹合并,nodes 引用 `fill_001` 而非内联,token 占用大幅下降
-- **`_meta.unhandledFields`**:Mockplus 升级 schema 时立刻可见,不会静默丢字段
+**关键设计:**
+- Token 复用:相同 fill/layout/effect 自动去重,节点上只放引用
+- 文字样式 key 用设计师命名(`sharedStyle.name`),保留语义
+- 切图节点 fills 数组里写 `IMAGE` fill,LLM 拿 `imageRef` 调 download
 
 ## 常见失败
 
 | 现象 | 处理 |
 |---|---|
-| `cookie 未配置` (exit 10) | 跑 `mockplus.py cookie set` |
-| `API code != 0` (exit 21) | cookie 过期 → `mockplus.py cookie set` 重配 |
-| `URL 指向 group,先用 tree 浏览` (exit 22) | URL 不是 page,先 `tree` 找具体 page id |
-| `_meta.unhandledFields` 不为空 | Mockplus 改 schema 了,反馈 issue |
-| 切图下载报 `invalid host` / `unsupported format` | URL 不在 `img(01\|02).mockplus.cn` 或不是 `.png` |
+| `cookie 未配置` (exit 10) | `mockplus cookie set` |
+| `API code != 0` (exit 21) | cookie 过期 → `mockplus cookie set` 重配 |
+| `URL 指向 group,先用 tree 浏览` (exit 22) | URL 不是 page,先 `tree` 找正确 page id |
+| `_meta.unhandledFields` 非空 | Mockplus schema 升级了,反馈 issue |
+| 切图下载失败 | CDN 临时不通,重跑 `download`(已存在的会跳过) |
+| 中国境外节点超时 | `img02.mockplus.cn` 是华东 CDN,境外节点请挂回国代理 |
 
-## 隐私 & 安全
+## Cache 与隐私
 
-- cookie 只读取,不上传;`config/cookie` 自动 `chmod 600`
-- API 响应缓存在 `~/.cache/mockplus-context/`,由用户自行清理
-- 切图保存到 `--local-path` 指定目录,由用户自管
+- 中间产物:`~/.cache/mockplus/<APP_ID>/`(可被 `MOCKPLUS_CACHE_DIR` 覆盖)
+- cookie 只读,不上传;`~/.config/mockplus/cookie` 自动 `chmod 600`
+- 用户切图产物在用户指定目录,不污染 git 仓库
+
+## 进阶参考
+
+- `references/examples.md` — 端到端调用样例
+- `references/troubleshooting.md` — 完整错误码 + 诊断
