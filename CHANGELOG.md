@@ -4,7 +4,8 @@
 
 ## Unreleased
 
-(无未发布变更;v0.5.0 已经发布。)
+### Fixed
+- `REAL_TYPE_TO_V5` 补 `Image` → `IMAGE`、`MSSliceLayer` → `SLICE`,消除 13 个 `_UNKNOWN_IMAGE` / `_UNKNOWN_MSSLICELAYER` 误标(切图数据本来就已正确提取,此次仅修正节点 `type` 标签)。
 
 ## v0.5.0 — 2026-05-23
 

@@ -77,7 +77,7 @@ metadata:
 nodes:
   - id: <UUID>
     name: Submit Action
-    type: TEXT                         # FRAME/TEXT/INSTANCE/RECTANGLE/ELLIPSE/VECTOR
+    type: TEXT                         # FRAME/TEXT/INSTANCE/RECTANGLE/ELLIPSE/VECTOR/IMAGE/SLICE
     layout: layout_000007              # 引用 globalVars.styles
     fills: fill_000001                 # 可选
     text: "Submit Action"

@@ -298,6 +298,8 @@ REAL_TYPE_TO_V5 = {
     "Path": "VECTOR",
     "path": "VECTOR",        # Mockplus 偶尔小写
     "MSShapeGroup": "VECTOR",  # 形状组,统一按 VECTOR
+    "Image": "IMAGE",        # 位图节点;图源常在父 SymbolInstance 或同级 MSSliceLayer 的 slice 上
+    "MSSliceLayer": "SLICE", # Sketch 切片层;自带 slice.bitmapURL,与同级 Image 节点配对
 }
 
 
