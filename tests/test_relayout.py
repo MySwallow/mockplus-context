@@ -23,11 +23,12 @@ META = {
     "device": "ios1x", "imageURL": "", "updatedAt": "",
 }
 
-TEXT_ID = "9A894626-5654-4ACE-9C70-217D7BEE7942"      # 已经到底了~
-RECT_ID = "3DDC4698-9083-427D-B791-46C52A625B4D"      # 矩形(375x48 条纹)
-INST_ID = "0A10D202-AE7F-4271-BBF9-129C9DCFB1BE"      # 吸底按钮 INSTANCE
-INST_CHILD_ID = "150B9D4D-E722-4BF2-AB7B-0467C1334A0D"
-HOME_INDICATOR_ID = "79F6C990-FFA1-48F3-9AB7-5C8047C31D80"  # 几何上落在 INSTANCE 内
+# 夹具节点 id 已脱敏为 FACADE 占位(见 fixtures/*.json);语义见行尾注释
+TEXT_ID = "FACADE15-0000-4000-8000-000000000000"      # 底部提示文本
+RECT_ID = "FACADE08-0000-4000-8000-000000000000"      # 矩形(375x48 条纹)
+INST_ID = "FACADE03-0000-4000-8000-000000000000"      # 吸底按钮 INSTANCE
+INST_CHILD_ID = "FACADE04-0000-4000-8000-000000000000"
+HOME_INDICATOR_ID = "FACADE11-0000-4000-8000-000000000000"  # 几何上落在 INSTANCE 内
 
 
 def _tf(name, coords="relative"):
@@ -100,7 +101,7 @@ def test_instance_internals_frozen_and_relative():
 
 
 def test_instance_does_not_adopt_strays():
-    """HomeIndicator/形状结合 几何上落在 INSTANCE 框内,但 INSTANCE 不收养(决策②)。"""
+    """HomeIndicator/形状节点 几何上落在 INSTANCE 框内,但 INSTANCE 不收养(决策②)。"""
     r = _tf("nested-groups")
     top_ids = [n["id"] for n in r["nodes"]]
     assert HOME_INDICATOR_ID in top_ids

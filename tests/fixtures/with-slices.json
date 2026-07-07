@@ -2,15 +2,15 @@
   "slicesCount": 0,
   "source": "sketch",
   "isUploadHDDesign": 0,
-  "clientID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
+  "clientID": "FACADE12-0000-4000-8000-000000000000",
   "documentVersion": "1.0",
   "backgroundColor": "#f5f5f5ff",
   "isUploadHightQualitySlice": 0,
   "positionX": 272,
   "markExtraArea": 0,
-  "artboardID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
+  "artboardID": "FACADE12-0000-4000-8000-000000000000",
   "isUploadHightQuality": 0,
-  "name": "采购申请单列表（老板）",
+  "name": "Sample List Page",
   "size": {
     "width": 375,
     "height": 812
@@ -19,7 +19,7 @@
   "flows": [],
   "positionY": -2705,
   "pluginVersion": "5.0.28",
-  "pageID": "1BAB8002-5A50-4983-B2D8-08971BF1B711",
+  "pageID": "FACADE06-0000-4000-8000-000000000000",
   "sliceScale": 1,
   "device": "ios1x",
   "artboardScale": 2,
@@ -53,15 +53,15 @@
       ]
     },
     "basic": {
-      "id": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
-      "libraryID": "BCE70C89-FD15-4E28-9BE7-1081065A022F",
+      "id": "FACADE12-0000-4000-8000-000000000000",
+      "libraryID": "FACADE18-0000-4000-8000-000000000000",
       "imageID": "",
       "type": "group",
       "opacity": 1,
-      "libraryName": "美孚门店通",
+      "libraryName": "Sample UI Kit",
       "realType": "Artboard",
-      "name": "采购申请单列表?老板?",
-      "sourceID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14"
+      "name": "Sample List Page",
+      "sourceID": "FACADE12-0000-4000-8000-000000000000"
     },
     "text": {},
     "sharedStyle": {},
@@ -86,21 +86,21 @@
         },
         "fill": {},
         "basic": {
-          "id": "9A894626-5654-4ACE-9C70-217D7BEE7942",
-          "libraryID": "BCE70C89-FD15-4E28-9BE7-1081065A022F",
+          "id": "FACADE15-0000-4000-8000-000000000000",
+          "libraryID": "FACADE18-0000-4000-8000-000000000000",
           "imageID": "",
-          "containerSourceName": "04表单/01表单/14底部提示",
+          "containerSourceName": "Form/Base/BottomHint",
           "type": "text",
           "opacity": 1,
-          "libraryName": "美孚门店通",
+          "libraryName": "Sample UI Kit",
           "realType": "Text",
-          "name": "已经到底了~",
-          "sourceID": "9A894626-5654-4ACE-9C70-217D7BEE7942"
+          "name": "No more items",
+          "sourceID": "FACADE15-0000-4000-8000-000000000000"
         },
         "text": {
           "styles": [
             {
-              "value": "已经到底了~",
+              "value": "No more items",
               "fontStyles": {
                 "lineThrough": 0,
                 "bold": 0,
@@ -116,7 +116,7 @@
                 "size": 12,
                 "family": "PingFang SC",
                 "weight": 400,
-                "name": "苹方-简 常规体",
+                "name": "PingFang SC Regular",
                 "fontWeight": "Regular",
                 "color": {
                   "type": "normal",
@@ -133,8 +133,8 @@
           ]
         },
         "sharedStyle": {
-          "id": "70C7CB75-7A69-436D-93F0-5E600C02E3B5",
-          "name": "03文字色3/12px/regular/居中对齐 Style",
+          "id": "FACADE10-0000-4000-8000-000000000000",
+          "name": "TextColor3/12px/Regular/Center Style",
           "type": "TextStyle"
         }
       },
@@ -166,19 +166,19 @@
           ]
         },
         "basic": {
-          "id": "3DDC4698-9083-427D-B791-46C52A625B4D",
-          "libraryID": "BCE70C89-FD15-4E28-9BE7-1081065A022F",
-          "containerSourceName": "04表单/01表单/14底部提示",
+          "id": "FACADE08-0000-4000-8000-000000000000",
+          "libraryID": "FACADE18-0000-4000-8000-000000000000",
+          "containerSourceName": "Form/Base/BottomHint",
           "type": "rect",
           "opacity": 1,
-          "libraryName": "美孚门店通",
+          "libraryName": "Sample UI Kit",
           "realType": "ShapePath",
-          "name": "矩形",
-          "sourceID": "3DDC4698-9083-427D-B791-46C52A625B4D"
+          "name": "Rectangle",
+          "sourceID": "FACADE08-0000-4000-8000-000000000000"
         },
         "text": {},
         "sharedStyle": {
-          "id": "18364505-FF64-4C54-BE11-CCCF82BFF5DA",
+          "id": "FACADE05-0000-4000-8000-000000000000",
           "name": "colors/grey/50",
           "type": "LayerStyle"
         }
@@ -217,13 +217,13 @@
           ]
         },
         "basic": {
-          "id": "79F6C990-FFA1-48F3-9AB7-5C8047C31D80",
+          "id": "FACADE11-0000-4000-8000-000000000000",
           "type": "rect",
           "opacity": 1,
-          "libraryName": "美孚门店通",
+          "libraryName": "Sample UI Kit",
           "realType": "ShapePath",
           "name": "Home Indicator",
-          "sourceID": "79F6C990-FFA1-48F3-9AB7-5C8047C31D80"
+          "sourceID": "FACADE11-0000-4000-8000-000000000000"
         },
         "text": {},
         "sharedStyle": {}
@@ -262,17 +262,17 @@
           ]
         },
         "basic": {
-          "id": "7EE75B8D-7B0E-4B2C-8BEF-57ADD7070551",
+          "id": "FACADE13-0000-4000-8000-000000000000",
           "type": "rect",
           "opacity": 1,
-          "libraryName": "美孚门店通",
+          "libraryName": "Sample UI Kit",
           "realType": "ShapePath",
-          "name": "按钮/背景/其它iPhone",
-          "sourceID": "7EE75B8D-7B0E-4B2C-8BEF-57ADD7070551"
+          "name": "Button/Bg/Other",
+          "sourceID": "FACADE13-0000-4000-8000-000000000000"
         },
         "text": {},
         "sharedStyle": {
-          "id": "F8F45C8E-BD9B-4F37-B089-10EF87F485A6",
+          "id": "FACADE22-0000-4000-8000-000000000000",
           "name": "blue/600",
           "type": "LayerStyle"
         }
@@ -322,19 +322,19 @@
           ]
         },
         "basic": {
-          "id": "02938A52-55B5-40AA-B5DC-5ECA69E98108",
-          "containerSourceName": "03筛选/01顶部/01标签/3",
+          "id": "FACADE01-0000-4000-8000-000000000000",
+          "containerSourceName": "Filter/Top/Tab/3",
           "type": "rect",
           "opacity": 1,
-          "libraryName": "美孚门店通",
+          "libraryName": "Sample UI Kit",
           "realType": "ShapePath",
-          "name": "背景",
-          "sourceID": "02938A52-55B5-40AA-B5DC-5ECA69E98108"
+          "name": "Background",
+          "sourceID": "FACADE01-0000-4000-8000-000000000000"
         },
         "text": {},
         "sharedStyle": {
-          "id": "3DDDA75A-6F5F-4648-8D39-0352301D6F85",
-          "name": "02分割/白底/下/EE",
+          "id": "FACADE09-0000-4000-8000-000000000000",
+          "name": "Divider/White/Bottom/EE",
           "type": "LayerStyle"
         }
       },
@@ -369,14 +369,14 @@
         "slice": "",
         "fill": {},
         "basic": {
-          "id": "FB632493-1E3B-4E3F-A85C-A9D8431C19D4",
-          "containerSourceName": "01导航栏/01原生/白底",
+          "id": "FACADE23-0000-4000-8000-000000000000",
+          "containerSourceName": "Nav/Native/White",
           "type": "rect",
           "opacity": 0.4,
-          "libraryName": "美孚门店通",
+          "libraryName": "Sample UI Kit",
           "realType": "ShapePath",
           "name": "Border",
-          "sourceID": "FB632493-1E3B-4E3F-A85C-A9D8431C19D4"
+          "sourceID": "FACADE23-0000-4000-8000-000000000000"
         },
         "text": {},
         "sharedStyle": {}
@@ -409,19 +409,19 @@
           ]
         },
         "basic": {
-          "id": "A91C3D46-C1B0-4087-863E-7183D1D8C5B0",
-          "containerSourceName": "01导航栏/01原生/白底",
+          "id": "FACADE16-0000-4000-8000-000000000000",
+          "containerSourceName": "Nav/Native/White",
           "type": "path",
           "opacity": 1,
-          "libraryName": "美孚门店通",
+          "libraryName": "Sample UI Kit",
           "realType": "path",
-          "name": "路径备份",
-          "sourceID": "A91C3D46-C1B0-4087-863E-7183D1D8C5B0"
+          "name": "Path",
+          "sourceID": "FACADE16-0000-4000-8000-000000000000"
         },
         "text": {},
         "sharedStyle": {
-          "id": "E2D70A6E-AEF7-4E73-AF81-7E702F6ECB9B",
-          "name": "01颜色/03文字色/1",
+          "id": "FACADE20-0000-4000-8000-000000000000",
+          "name": "Color/Text/1",
           "type": "LayerStyle"
         }
       },
@@ -453,18 +453,18 @@
           ]
         },
         "basic": {
-          "id": "079AACFE-6C8C-4823-BA15-D6CDEFE7A04D",
-          "containerSourceName": "04表单/04单选/卡片-选2",
+          "id": "FACADE02-0000-4000-8000-000000000000",
+          "containerSourceName": "Form/Radio/Card2",
           "opacity": 1,
-          "libraryName": "美孚门店通",
+          "libraryName": "Sample UI Kit",
           "realType": "MSShapeGroup",
-          "name": "形状结合",
-          "sourceID": "079AACFE-6C8C-4823-BA15-D6CDEFE7A04D"
+          "name": "Shape",
+          "sourceID": "FACADE02-0000-4000-8000-000000000000"
         },
         "text": {},
         "sharedStyle": {
-          "id": "B34CA247-2C81-4BF1-B603-020637360F22",
-          "name": "01颜色/03文字色/2",
+          "id": "FACADE17-0000-4000-8000-000000000000",
+          "name": "Color/Text/2",
           "type": "LayerStyle"
         }
       },
@@ -484,18 +484,18 @@
         "slice": "",
         "fill": {},
         "basic": {
-          "id": "0A10D202-AE7F-4271-BBF9-129C9DCFB1BE",
-          "symbolMasterId": "E442B0B5-32A4-48BB-ACE2-FAAA59393AD4",
-          "libraryID": "D3C501DC-1DA2-4FE4-AA37-8B098D47B7A7",
+          "id": "FACADE03-0000-4000-8000-000000000000",
+          "symbolMasterId": "FACADE21-0000-4000-8000-000000000000",
+          "libraryID": "FACADE19-0000-4000-8000-000000000000",
           "imageID": "",
-          "symbolId": "8A5E893D-9C2F-4233-8136-8976C243CB45",
-          "containerSourceName": "07按钮/01吸底/03结算类/全选+数价",
+          "symbolId": "FACADE14-0000-4000-8000-000000000000",
+          "containerSourceName": "Button/Sticky/Checkout",
           "type": "symbol",
           "opacity": 1,
-          "libraryName": "美孚门店通规范",
+          "libraryName": "Sample UI Kit Spec",
           "realType": "SymbolInstance",
-          "name": "07按钮/01吸底/03结算类/全选+数价",
-          "sourceID": "0A10D202-AE7F-4271-BBF9-129C9DCFB1BE"
+          "name": "Button/Sticky/Checkout",
+          "sourceID": "FACADE03-0000-4000-8000-000000000000"
         },
         "text": {},
         "sharedStyle": {},
@@ -516,18 +516,18 @@
             "slice": "",
             "fill": {},
             "basic": {
-              "id": "150B9D4D-E722-4BF2-AB7B-0467C1334A0D",
+              "id": "FACADE04-0000-4000-8000-000000000000",
               "type": "text",
               "opacity": 1,
-              "libraryName": "美孚门店通",
+              "libraryName": "Sample UI Kit",
               "realType": "Text",
-              "name": "页面内",
-              "sourceID": "150B9D4D-E722-4BF2-AB7B-0467C1334A0D"
+              "name": "Inside Page",
+              "sourceID": "FACADE04-0000-4000-8000-000000000000"
             },
             "text": {
               "styles": [
                 {
-                  "value": "合并转采购",
+                  "value": "Submit",
                   "fontStyles": {
                     "lineThrough": 0,
                     "bold": 0,
@@ -542,7 +542,7 @@
                     "size": 16,
                     "family": "PingFang SC",
                     "weight": 600,
-                    "name": "苹方-简 中粗体",
+                    "name": "PingFang SC Semibold",
                     "fontWeight": "Semibold",
                     "color": {
                       "type": "normal",
@@ -559,8 +559,8 @@
               ]
             },
             "sharedStyle": {
-              "id": "21B6C4A6-2C7D-43B1-816B-8A243DCECA9C",
-              "name": "09白色/16px/semibold/居中对齐 Style",
+              "id": "FACADE07-0000-4000-8000-000000000000",
+              "name": "White/16px/Semibold/Center Style",
               "type": "TextStyle"
             }
           }

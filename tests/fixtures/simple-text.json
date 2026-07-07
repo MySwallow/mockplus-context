@@ -2,15 +2,15 @@
   "slicesCount": 0,
   "source": "sketch",
   "isUploadHDDesign": 0,
-  "clientID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
+  "clientID": "FACADE12-0000-4000-8000-000000000000",
   "documentVersion": "1.0",
   "backgroundColor": "#f5f5f5ff",
   "isUploadHightQualitySlice": 0,
   "positionX": 272,
   "markExtraArea": 0,
-  "artboardID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
+  "artboardID": "FACADE12-0000-4000-8000-000000000000",
   "isUploadHightQuality": 0,
-  "name": "采购申请单列表（老板）",
+  "name": "Sample List Page",
   "size": {
     "width": 375,
     "height": 812
@@ -19,7 +19,7 @@
   "flows": [],
   "positionY": -2705,
   "pluginVersion": "5.0.28",
-  "pageID": "1BAB8002-5A50-4983-B2D8-08971BF1B711",
+  "pageID": "FACADE06-0000-4000-8000-000000000000",
   "sliceScale": 1,
   "device": "ios1x",
   "artboardScale": 2,
@@ -53,15 +53,15 @@
       ]
     },
     "basic": {
-      "id": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14",
-      "libraryID": "BCE70C89-FD15-4E28-9BE7-1081065A022F",
+      "id": "FACADE12-0000-4000-8000-000000000000",
+      "libraryID": "FACADE18-0000-4000-8000-000000000000",
       "imageID": "",
       "type": "group",
       "opacity": 1,
-      "libraryName": "美孚门店通",
+      "libraryName": "Sample UI Kit",
       "realType": "Artboard",
-      "name": "采购申请单列表?老板?",
-      "sourceID": "7C5EFF64-F075-4F8F-96B9-D49B10C2EA14"
+      "name": "Sample List Page",
+      "sourceID": "FACADE12-0000-4000-8000-000000000000"
     },
     "text": {},
     "sharedStyle": {},
@@ -82,21 +82,21 @@
         "slice": "",
         "fill": {},
         "basic": {
-          "id": "9A894626-5654-4ACE-9C70-217D7BEE7942",
-          "libraryID": "BCE70C89-FD15-4E28-9BE7-1081065A022F",
+          "id": "FACADE15-0000-4000-8000-000000000000",
+          "libraryID": "FACADE18-0000-4000-8000-000000000000",
           "imageID": "",
-          "containerSourceName": "04表单/01表单/14底部提示",
+          "containerSourceName": "Form/Base/BottomHint",
           "type": "text",
           "opacity": 1,
-          "libraryName": "美孚门店通",
+          "libraryName": "Sample UI Kit",
           "realType": "Text",
-          "name": "已经到底了~",
-          "sourceID": "9A894626-5654-4ACE-9C70-217D7BEE7942"
+          "name": "No more items",
+          "sourceID": "FACADE15-0000-4000-8000-000000000000"
         },
         "text": {
           "styles": [
             {
-              "value": "已经到底了~",
+              "value": "No more items",
               "fontStyles": {
                 "lineThrough": 0,
                 "bold": 0,
@@ -112,7 +112,7 @@
                 "size": 12,
                 "family": "PingFang SC",
                 "weight": 400,
-                "name": "苹方-简 常规体",
+                "name": "PingFang SC Regular",
                 "fontWeight": "Regular",
                 "color": {
                   "type": "normal",
@@ -129,8 +129,8 @@
           ]
         },
         "sharedStyle": {
-          "id": "70C7CB75-7A69-436D-93F0-5E600C02E3B5",
-          "name": "03文字色3/12px/regular/居中对齐 Style",
+          "id": "FACADE10-0000-4000-8000-000000000000",
+          "name": "TextColor3/12px/Regular/Center Style",
           "type": "TextStyle"
         }
       }
