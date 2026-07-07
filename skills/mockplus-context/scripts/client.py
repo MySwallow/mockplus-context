@@ -20,6 +20,7 @@ from typing import List, Optional, Tuple
 API_HOST = "https://app.mockplus.cn"
 CDN_HOST_RE = re.compile(r"^https://img(0[12])\.mockplus\.cn/")
 CACHE_TTL_SECONDS = 24 * 3600
+MAX_FALLBACK_STALE_SECONDS = 7 * 24 * 3600  # 离线回退最多接受 7 天旧缓存
 COOKIE_TTL_DAYS = 30  # 估算到期
 
 DEFAULT_HEADERS = {
@@ -152,20 +153,55 @@ def parse_url_or_short(s: str) -> Tuple[str, Optional[str]]:
 # Index + 页面元信息
 # ============================================================
 
+def _stale_fallback(cache_fp: Path, what: str) -> Optional[dict]:
+    """网络/认证失败时的过期缓存回退(v0.6.0)。
+
+    只接受 ≤7 天旧、可完整解析的缓存;超龄或损坏返回 None(让原错误继续抛)。
+    故意也覆盖 cookie 未配置/失效的场景 —— transform 升级后离线重转本地缓存
+    正是该回退存在的目的;stderr 告警会带缓存年龄,提醒这不是新鲜数据。
+    """
+    try:
+        age = time.time() - cache_fp.stat().st_mtime
+        if age > MAX_FALLBACK_STALE_SECONDS:
+            cap_days = MAX_FALLBACK_STALE_SECONDS // 86400
+            print(f"WARN: {what} 拉取失败,本地缓存已 {age/86400:.1f} 天"
+                  f"(>{cap_days} 天上限),不回退;请联网重试或 --refresh",
+                  file=sys.stderr)
+            return None
+        data = json.loads(cache_fp.read_text())
+    except (OSError, ValueError):
+        return None  # 缓存缺失/损坏:走原错误路径
+    print(f"WARN: {what} 拉取失败,回退 {age/86400:.1f} 天前的过期缓存 {cache_fp}",
+          file=sys.stderr)
+    return data
+
+
 def fetch_index(app_id: str, refresh: bool = False) -> dict:
-    """拉 /api/v1/app/module/<APP_ID>/design。24h cache。"""
+    """拉 /api/v1/app/module/<APP_ID>/design。24h cache。
+
+    v0.6.0:非 --refresh 时,网络/cookie 失败 → `_stale_fallback` 回退过期缓存
+    (保证 transform 版本升级后能离线用本地缓存重转,旧产物不必等网络)。
+    """
     cdir = cache_root() / app_id
     cdir.mkdir(mode=0o700, parents=True, exist_ok=True)
     cache_fp = cdir / "_index.json"
     if (not refresh and cache_fp.exists()
             and time.time() - cache_fp.stat().st_mtime < CACHE_TTL_SECONDS):
         return json.loads(cache_fp.read_text())
-    cookie = require_cookie()
-    raw = _get(f"/api/v1/app/module/{app_id}/design", cookie=cookie)
-    data = json.loads(raw)
-    if data.get("code") != 0:
-        print(f"ERR: API code={data.get('code')} msg={data.get('message')}", file=sys.stderr)
-        sys.exit(21)
+    try:
+        cookie = require_cookie()
+        raw = _get(f"/api/v1/app/module/{app_id}/design", cookie=cookie)
+        data = json.loads(raw)
+        if data.get("code") != 0:
+            print(f"ERR: API code={data.get('code')} msg={data.get('message')}", file=sys.stderr)
+            sys.exit(21)
+    except (SystemExit, urllib.error.URLError, urllib.error.HTTPError,
+            OSError, ValueError):
+        if not refresh:
+            stale = _stale_fallback(cache_fp, "index")
+            if stale is not None:
+                return stale
+        raise
     cache_fp.write_text(json.dumps(data, ensure_ascii=False, indent=2))
     os.chmod(cache_fp, 0o600)
     return data
@@ -228,14 +264,24 @@ def fetch_page_data(page_meta: dict) -> dict:
 
 
 def get_page_data_cached(app_id: str, page_meta: dict, refresh: bool = False) -> dict:
-    """带 cache 的版本:写到 cache_root/<APP_ID>/<PAGE_ID>/data.json。"""
+    """带 cache 的版本:写到 cache_root/<APP_ID>/<PAGE_ID>/data.json。
+
+    v0.6.0:非 --refresh 时,CDN 拉取失败 → `_stale_fallback` 回退过期缓存。
+    """
     cdir = cache_root() / app_id / page_meta["id"]
     cdir.mkdir(mode=0o700, parents=True, exist_ok=True)
     data_fp = cdir / "data.json"
     if (not refresh and data_fp.exists()
             and time.time() - data_fp.stat().st_mtime < CACHE_TTL_SECONDS):
         return json.loads(data_fp.read_text())
-    data = fetch_page_data(page_meta)
+    try:
+        data = fetch_page_data(page_meta)
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, ValueError):
+        if not refresh:
+            stale = _stale_fallback(data_fp, "页面数据")
+            if stale is not None:
+                return stale
+        raise
     data_fp.write_text(json.dumps(data, ensure_ascii=False))
     os.chmod(data_fp, 0o600)
     return data

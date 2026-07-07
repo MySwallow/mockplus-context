@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""mockplus-context skill 主入口(v0.5.0)。
+"""mockplus-context skill 主入口(v0.6.0)。
    子命令: data / download / all / tree / cookie
 """
 import argparse
@@ -9,7 +9,7 @@ import sys
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="mockplus",
-        description="Mockplus 设计稿 → YAML/JSON + 切图(v0.5.0)",
+        description="Mockplus 设计稿 → YAML/JSON + 切图(v0.6.0)",
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -18,6 +18,9 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("url", help="完整 URL 或 <APP_ID>:<PAGE_ID>")
     g.add_argument("--out", default="-", help="输出路径(默认 stdout)")
     g.add_argument("--format", choices=["yaml", "json"], default="yaml")
+    g.add_argument("--coords", choices=["relative", "absolute"], default="relative",
+                   help="坐标语义:relative=包含树重建+相对父坐标(默认);"
+                        "absolute=v0.5 画布绝对坐标(回滚通道)")
     g.add_argument("--stats", action="store_true", help="额外打印统计到 stderr")
     g.add_argument("--refresh", action="store_true", help="跳过 cache 重拉")
 
@@ -37,6 +40,8 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("url")
     g.add_argument("out_dir", nargs="?", default=None,
                    help="输出目录(默认 ./mockplus-cache/<APP>/<PAGE>/)")
+    g.add_argument("--coords", choices=["relative", "absolute"], default="relative",
+                   help="透传给 data 步骤(语义见 data --coords)")
 
     # tree
     g = sub.add_parser("tree", help="树形打印项目结构(找 page id)")

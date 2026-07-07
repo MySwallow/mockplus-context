@@ -152,7 +152,8 @@ def action_data(args) -> int:
     page_meta = next(p for p in pages if p["id"] == target_id)
 
     data = client.get_page_data_cached(app_id, page_meta, refresh=args.refresh)
-    result = _transform.transform(data, page_meta, app_id)
+    result = _transform.transform(data, page_meta, app_id,
+                                  coords=getattr(args, "coords", "relative"))
 
     # 校验:断言关键字段(替代砍掉的 _schema.py)
     try:
@@ -244,7 +245,8 @@ def action_all(args) -> int:
     # 1) data → data.yaml
     data_ns = _argparse.Namespace(
         url=args.url, out=str(out_root / "data.yaml"),
-        format="yaml", stats=False, refresh=False,
+        format="yaml", coords=getattr(args, "coords", "relative"),
+        stats=False, refresh=False,
     )
     rc = action_data(data_ns)
     if rc != 0:

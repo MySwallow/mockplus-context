@@ -2,10 +2,36 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/),版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
-## Unreleased
+## v0.6.0 — 2026-07-07
+
+**包含树重建:子控件真正嵌套进视觉容器,`locationRelativeToParent` 名副其实。**
+
+Sketch/Mockplus 原始数据只有画布绝对坐标,且"标题压在导航条上"在树里是平级兄弟。
+v0.6 在转换管线末端加独立后处理 pass(`relayout.py`),按几何包含重建父子并改写相对坐标。
+设计决策经 5 页真实语料(1582 节点)实证:不变量全绿、可逆性位级精确、与算法原型指派 100% 一致。
+
+### Breaking
+- **`locationRelativeToParent` 语义修正**:v0.5 存画布绝对坐标(历史命名 bug),v0.6 起为真·相对父坐标。新旧文件用 `_meta.coordinateSpace` 区分(`parent-relative` / `absolute-artboard`);消费旧缓存文件前先看这个标记
+- **nodes 树形变化**:视觉上被兄弟背景/卡片包含的节点重挂为其子节点(授权分组是硬边界,只在组内兄弟间嵌套;真实页约 8~16% 节点被重挂)
+- **layout token 全量重编号**:相对化后去重率更高(真实页 205 → 158,-23%),token id 与 v0.5 不连续
+- 回滚通道:`mockplus data/all --coords absolute` 保留 v0.5 绝对坐标语义(过渡期一个版本周期);`transform(coords=...)` 对非法值快失败(ValueError),不静默翻转语义
+
+### Added
+- `relayout.py`:作用域化包含树重建 —— 最小面积包含者 + ε_contain=1.0 / ε_stack=0.5(堆叠判定独立紧容差)+ z 过滤(数组前=顶层,作用域内方向证据 <80% 自动禁用并告警)+ 满幅背景豁免 + 确定性 tie-break;内置不变量校验(无环/全覆盖/几何包含/位级可逆),任一失败**或任何未预期异常**自动回退 v0.5 语义并写 `_meta.warnings`(重建缺陷绝不升级为导出失败)
+- **容器节点级 `absolutePosition`**:任意叶子的画布绝对位置 = 最近容器 absolutePosition + 自身 rel,一次加法
+- **INSTANCE 内部冻结、不收养**:组件实例结构与组件定义保持一致;跨界收养仅限授权分组,节点打 `adoptedBy: geometry` 标记
+- `_meta.relayout` 统计:reparented / adopted / ambiguousTies / keptViolations / zFilter / zEvidence
+- `REAL_TYPE_TO_V5` 补 `mask` → `MASK`(真实语料发现的裁剪蒙版层;relayout 冻结处理),`basic.maskType` 纳入已处理字段
+- client 离线回退:非 `--refresh` 时网络/cookie 失败自动回退过期缓存并告警(transform 升级后可离线重转本地缓存);仅接受 ≤7 天旧且可完整解析的缓存,超龄/损坏走原错误路径
 
 ### Fixed
 - `REAL_TYPE_TO_V5` 补 `Image` → `IMAGE`、`MSSliceLayer` → `SLICE`,消除 13 个 `_UNKNOWN_IMAGE` / `_UNKNOWN_MSSLICELAYER` 误标(切图数据本来就已正确提取,此次仅修正节点 `type` 标签)。
+
+### Tests
+- 新增 `tests/test_relayout.py`(36 用例):黄金用例(兄弟→父子 rel=(155,12)、实例内部冻结 rel=(266,19)、INSTANCE 不收养)+ 全夹具不变量(位级可逆 / ε 包含 / 节点集不变 / 确定性 / 幂等)+ `--coords absolute` 回滚语义 + mask 映射 + 安全网分支(校验失败回退、未预期异常兜底、zFilter 自动禁用、平局 tie-break、keptViolations、悬空 token、空页、token 撞名防护、收养层叠序、coords 非法值快失败)
+- 新增 `tests/test_client.py`(7 用例):离线回退 ≤7 天命中 / 超龄拒绝 / 损坏缓存拒绝 / `--refresh` 不回退 / cookie 缺失回退 / 页面数据两侧边界
+- 新增 `tests/test_cli_args.py`(2 用例):`--coords` 在 `data` 与 `all` 两个入口的参数面契约
+- 5 份 `expected/*.yaml` 快照按 v0.6 语义重生成
 
 ## v0.5.0 — 2026-05-23
 

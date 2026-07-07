@@ -14,17 +14,21 @@ metadata:
       name: 07按钮/01吸底/03结算类/全选+数价
       libraryName: 美孚门店通规范
 nodes:
-- id: 9A894626-5654-4ACE-9C70-217D7BEE7942
-  name: 已经到底了~
-  type: TEXT
-  layout: layout_000001
-  textStyle: 03文字色3/12px/regular/居中对齐 Style
-  text: 已经到底了~
 - id: 3DDC4698-9083-427D-B791-46C52A625B4D
   name: 矩形
   type: VECTOR
-  layout: layout_000002
+  layout: layout_000001
+  absolutePosition:
+    x: 0
+    y: 428
   fills: fill_000001
+  children:
+  - id: 9A894626-5654-4ACE-9C70-217D7BEE7942
+    name: 已经到底了~
+    type: TEXT
+    layout: layout_000002
+    textStyle: 03文字色3/12px/regular/居中对齐 Style
+    text: 已经到底了~
 - id: 79F6C990-FFA1-48F3-9AB7-5C8047C31D80
   name: Home Indicator
   type: VECTOR
@@ -63,6 +67,9 @@ nodes:
   name: 07按钮/01吸底/03结算类/全选+数价
   type: INSTANCE
   layout: layout_000009
+  absolutePosition:
+    x: 0
+    y: 718
   componentId: 美孚门店通规范/07按钮/01吸底/03结算类/全选+数价
   children:
   - id: 150B9D4D-E722-4BF2-AB7B-0467C1334A0D
@@ -79,8 +86,21 @@ globalVars:
         horizontal: fixed
         vertical: fixed
       locationRelativeToParent:
+        x: 0
+        y: 428
+      dimensions:
+        width: 375
+        height: 48
+    fill_000001:
+    - '#F5F5F5'
+    layout_000002:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
         x: 155
-        y: 440
+        y: 12
       dimensions:
         width: 66
         height: 17
@@ -93,19 +113,6 @@ globalVars:
       lineHeight: 17
       letterSpacing: 0
       textAlignHorizontal: CENTER
-    layout_000002:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      locationRelativeToParent:
-        x: 0
-        y: 428
-      dimensions:
-        width: 375
-        height: 48
-    fill_000001:
-    - '#F5F5F5'
     layout_000003:
       mode: none
       sizing:
@@ -173,8 +180,8 @@ globalVars:
         horizontal: fixed
         vertical: fixed
       locationRelativeToParent:
-        x: 18.0
-        y: 33.0
+        x: 18
+        y: 33
       dimensions:
         width: 10.5
         height: 18.5
@@ -209,7 +216,7 @@ globalVars:
         vertical: fixed
       locationRelativeToParent:
         x: 266
-        y: 737
+        y: 19
       dimensions:
         width: 80
         height: 22
@@ -222,9 +229,17 @@ globalVars:
       lineHeight: 22
       textAlignHorizontal: CENTER
 _meta:
-  transformVersion: 0.5.0
+  transformVersion: 0.6.0
+  coordinateSpace: parent-relative
   sketchPluginVersion: 5.0.28
   documentVersion: '1.0'
   inputFieldsTotal: 164
   unhandledFields: []
   warnings: []
+  relayout:
+    reparented: 1
+    adopted: 0
+    ambiguousTies: 0
+    keptViolations: 0
+    zFilter: 'on'
+    zEvidence: '4:0'
