@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""mockplus-context skill 主入口(v0.6.0)。
+"""mockplus-context skill 主入口(v0.7.0)。
    子命令: data / download / all / tree / cookie
 """
 import argparse
@@ -9,7 +9,7 @@ import sys
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="mockplus",
-        description="Mockplus 设计稿 → YAML/JSON + 切图(v0.6.0)",
+        description="Mockplus 设计稿 → YAML/JSON + 切图(v0.7.0)",
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -21,6 +21,8 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--coords", choices=["relative", "absolute"], default="relative",
                    help="坐标语义:relative=包含树重建+相对父坐标(默认);"
                         "absolute=v0.5 画布绝对坐标(回滚通道)")
+    g.add_argument("--raw", action="store_true",
+                   help="输出未蒸馏原文(v0.6 形态;默认 YAML 经 distill 蒸馏 −~49%)")
     g.add_argument("--stats", action="store_true", help="额外打印统计到 stderr")
     g.add_argument("--refresh", action="store_true", help="跳过 cache 重拉")
 

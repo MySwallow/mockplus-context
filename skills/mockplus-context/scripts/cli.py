@@ -164,8 +164,17 @@ def action_data(args) -> int:
         print(f"ERR: transform 输出校验失败: {e}", file=sys.stderr)
         return 2
 
-    # 输出
+    # 输出(v0.7:YAML 默认经 distill 蒸馏;--raw 或蒸馏失败回退原文,绝不出半成品)
     out_text = _transform.serialize(result, fmt=args.format)
+    if args.format == "yaml" and not getattr(args, "raw", False):
+        try:
+            import distill
+            out_text, dstats = distill.apply_text(out_text)
+            print(f"OK: distilled -{dstats['saved_pct']}% "
+                  f"(layouts {dstats['layouts_inlined']} inlined, uuid {dstats['uuids']})",
+                  file=sys.stderr)
+        except Exception as e:
+            print(f"WARN: distill 失败,已回退未蒸馏原文: {e}", file=sys.stderr)
     if args.out and args.out != "-":
         Path(args.out).write_text(out_text)
         print(f"OK: 写入 {args.out}", file=sys.stderr)
