@@ -13,12 +13,19 @@ description: |
   Skip ONLY for: Figma URLs, isolated PNG/PDF/screenshot files with no Mockplus link, local .sketch parsing, building a Mockplus-clone product, or Mockplus desktop-app UI bugs.
 ---
 
-# Mockplus Context (v0.6.0)
+# Mockplus Context (v0.7.0)
 
 把 Mockplus develop URL 转换为**结构化 YAML**,LLM 直接消费。v0.6 起输出经过
 **包含树重建**:视觉上压在背景/卡片上的元素真正嵌套为其子节点,
 `locationRelativeToParent` 是真·相对父坐标(v0.5 及更早是画布绝对坐标,
 读旧缓存文件时看 `_meta.coordinateSpace` 区分)。
+
+v0.7 起 YAML 默认再经**机械蒸馏**(`scripts/distill.py`,实测 −45~48%):
+`layout_*` 查找表内联为节点行内 `pos: {x, y, w, h}`(非默认 mode/sizing 以
+`mode:`/`hsz:`/`vsz:` 键保留),UUID 截前 8 位(确定性、跨拉取稳定);`imageRef`
+资产哈希、fill/textStyle 表、文本内容一律不动。出口不变量自检,任何一条不满足
+即整体回退未蒸馏原文(stderr WARN),绝不出半成品;产物打标 `_meta.distilled: true`。
+要 v0.6 原形态加 `--raw`;旧文件离线蒸馏:`python3 scripts/distill.py <in> [<out>] [--check-only]`。
 
 启动时声明:**"Using mockplus-context to extract <PAGE_ID> from Mockplus."**
 
@@ -56,7 +63,7 @@ Cookie 默认存到 `~/.config/mockplus/cookie`,有效期约 30 天。401 时让
 ## 命令速查
 
 ```bash
-mockplus data <URL> [--out PATH] [--format yaml|json] [--coords relative|absolute] [--stats] [--refresh]
+mockplus data <URL> [--out PATH] [--format yaml|json] [--coords relative|absolute] [--raw] [--stats] [--refresh]
 mockplus download <URL> [--nodes all|h1,h2] [--out DIR] [--include-design]
 mockplus all <URL> [<OUT_DIR>] [--coords relative|absolute]   # = data + download(all + design)
 mockplus tree <APP_ID> [--format text|json] [--refresh]
@@ -78,30 +85,26 @@ metadata:
     <libId>/<path>: { id, name, libraryName }
 
 nodes:
-  - id: <UUID>
+  - id: 2F11A218                       # v0.7:UUID 已截前 8 位(--raw 为完整 UUID)
     name: Submit Bar                   # 吸底栏背景(重建后成为容器)
     type: VECTOR                       # FRAME/TEXT/INSTANCE/RECTANGLE/ELLIPSE/VECTOR/IMAGE/SLICE/MASK
-    layout: layout_000003
+    pos: {x: 0, y: 718, w: 375, h: 48} # v0.7:layout 表已内联为行内 pos(--raw 为 layout: layout_000003)
     absolutePosition: { x: 0, y: 718 } # 仅容器节点有:画布绝对锚点
     children:
-      - id: <UUID2>
+      - id: 67C9DB5F
         name: Submit Action
         type: TEXT
-        layout: layout_000007          # 引用 globalVars.styles
+        pos: {x: 266, y: 19, w: 80, h: 22}   # 真·相对父坐标(v0.6 语义不变)
         fills: fill_000001             # 可选
         text: "Submit Action"
         textStyle: Body/16px/Semibold/Center Style   # 设计师命名
 
 globalVars:
-  styles:
+  styles:                              # v0.7:仅剩 fill / textStyle(layout_* 已内联)
     fill_000003:                       # 切图填充
       - type: IMAGE
-        imageRef: 2b417ea8...          # ← LLM 拿这个调 download
+        imageRef: 2b417ea8...          # ← LLM 拿这个调 download(40 位哈希,蒸馏不动)
         scaleMode: FILL
-    layout_000007:
-      mode: none
-      locationRelativeToParent: { x: 266, y: 19 }   # 真·相对父坐标(v0.6 起)
-      dimensions: { width: 80, height: 22 }
     Body/16px/Semibold/Center Style:
       fontFamily: PingFang SC
       fontWeight: 600
