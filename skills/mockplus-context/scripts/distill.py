@@ -8,6 +8,10 @@
    引用与定义原样保留)。
 2. UUID(8-4-4-4-12)→ 前 8 位确定性截断(跨拉取稳定,判子 id 锚点不受影响;
    短 id 碰撞时整体放弃蒸馏)。imageRef 等 40 位资产哈希不动(download 要用)。
+   前 8 位若会被 YAML 读成数字则该 id 保留全 UUID——文本级替换无法安全加
+   引号,截断反而引入类型歧义(fc 实测 2600 节点命中 2 个,≈0.4%/id 概率)。
+   歧义口径取 1.1/1.2 并集:PyYAML safe_load 非 str(八进制形 `03450216`),
+   或 1.2 core schema 数字形(纯数字 `12345678`、浮点形 `1234E567`)。
 
 文本级变换 + 出口不变量自检;任何不变量不满足即抛 DistillError——调用方
 (cli.action_data)回退输出未蒸馏原文,绝不输出半蒸馏产物。
@@ -85,13 +89,27 @@ def apply_text(src: str) -> tuple:
         return "pos: " + inline[name] if name in inline else m.group(0)
     out = re.sub(r"layout: (layout_\d+)", sub_ref, out)
 
-    # 3) UUID → 前 8 位(碰撞则放弃)
-    fulls = set(UUID_RE.findall(out) and [m.group(0) for m in UUID_RE.finditer(out)])
-    shorts = {f[:8] for f in fulls}
-    if len(shorts) != len(fulls):
+    # 3) UUID → 前 8 位(碰撞则放弃;前 8 位与 YAML 数字形歧义的 id 保留全 UUID)
+    import yaml as _yaml
+
+    def _ambiguous(s):
+        # PyYAML(1.1)口径:safe_load 读出非字符串(如八进制形 03450216)
+        try:
+            if not isinstance(_yaml.safe_load(s), str):
+                return True
+        except Exception:
+            return True
+        # YAML 1.2 core schema 口径(js-yaml/yq 等):纯数字=int、数字E数字=float
+        return bool(re.fullmatch(r"\d+", s) or re.fullmatch(r"\d+[eE]\d+", s))
+
+    fulls = {m.group(0) for m in UUID_RE.finditer(out)}
+    shortable = {f for f in fulls if not _ambiguous(f[:8])}
+    shorts = {f[:8] for f in shortable}
+    if len(shorts) != len(shortable):
         raise DistillError("UUID 前 8 位截断出现碰撞,放弃蒸馏")
-    uuids_n = len(fulls)
-    out = UUID_RE.sub(r"\1", out)
+    uuids_n = len(shortable)
+    kept_full = len(fulls) - uuids_n
+    out = UUID_RE.sub(lambda m: m.group(1) if m.group(0) in shortable else m.group(0), out)
 
     # 4) _meta 打标
     out, n = re.subn(r"^_meta:\n", f"_meta:\n  distilled: true\n  distillVersion: {DISTILL_VERSION}\n",
@@ -129,6 +147,7 @@ def apply_text(src: str) -> tuple:
         "layouts_inlined": len(inline),
         "layouts_skipped": skipped,
         "uuids": uuids_n,
+        "uuids_kept_full": kept_full,
     }
     return out, stats
 
