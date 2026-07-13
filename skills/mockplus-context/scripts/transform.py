@@ -384,6 +384,9 @@ def extract_node(node: dict, ctx: TransformContext,
         st = text_styles[0]
         if len(text_styles) > 1:
             ctx.warn(f"node {nid} 有 {len(text_styles)} 段 text.styles,仅取首段")
+            # 节点级警示:页级 warning 消费方看不见,首段样式可能不代表整段
+            # (fc 实录:首段 fontWeight 600、sharedStyle 实为 medium → 判子字重假 FAIL)
+            out["textSegments"] = len(text_styles)
         # 优先用 sharedStyle.name(若有)
         # Mockplus sharedStyle.type 实际值是 "TextStyle"(大写驼峰)
         shared = node.get("sharedStyle") or {}

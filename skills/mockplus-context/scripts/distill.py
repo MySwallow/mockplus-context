@@ -111,9 +111,15 @@ def apply_text(src: str) -> tuple:
     kept_full = len(fulls) - uuids_n
     out = UUID_RE.sub(lambda m: m.group(1) if m.group(0) in shortable else m.group(0), out)
 
-    # 4) _meta 打标
-    out, n = re.subn(r"^_meta:\n", f"_meta:\n  distilled: true\n  distillVersion: {DISTILL_VERSION}\n",
-                     out, count=1, flags=re.M)
+    # 4) _meta 打标(+legacy 坐标空间警示:v0.5 历史文件 locationRelativeToParent 名不副实
+    #    存画布绝对坐标——蒸馏只搬值,消费方把这种 pos 当相对父坐标会全盘算错)
+    legacy_space = "coordinateSpace: parent-relative" not in src
+    stamp = f"_meta:\n  distilled: true\n  distillVersion: {DISTILL_VERSION}\n"
+    if legacy_space:
+        stamp += ("  distillWarnings:\n"
+                  "  - '输入无 coordinateSpace: parent-relative 标记——pos 为输入原语义"
+                  "(v0.5 历史文件是画布绝对坐标),勿当相对父坐标消费'\n")
+    out, n = re.subn(r"^_meta:\n", stamp, out, count=1, flags=re.M)
     if n != 1:
         raise DistillError("_meta 块缺失,无法打蒸馏标")
 
@@ -148,6 +154,7 @@ def apply_text(src: str) -> tuple:
         "layouts_skipped": skipped,
         "uuids": uuids_n,
         "uuids_kept_full": kept_full,
+        "legacy_coordinate_space": legacy_space,
     }
     return out, stats
 
@@ -171,6 +178,9 @@ def main(argv=None) -> int:
           f"(-{stats['saved_pct']}%), layouts {stats['layouts_inlined']} inlined"
           f"{' skipped=' + ','.join(stats['layouts_skipped']) if stats['layouts_skipped'] else ''}, "
           f"uuid {stats['uuids']}", file=sys.stderr)
+    if stats["legacy_coordinate_space"]:
+        print(f"WARN {src_path}: 输入坐标空间非 parent-relative(v0.5 历史文件?)——"
+              f"pos 为原语义,已写 _meta.distillWarnings", file=sys.stderr)
     if check_only:
         return 0
     dst = args[1] if len(args) > 1 else src_path

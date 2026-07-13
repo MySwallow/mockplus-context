@@ -83,3 +83,20 @@ def test_prefix_collision_still_aborts():
     src = _swap(src, "FACADE11", "ABCDEF01-2222-4222-8222-222222222222")
     with pytest.raises(distill.DistillError, match="碰撞"):
         distill.apply_text(src)
+
+
+def test_legacy_coordinate_space_warned():
+    """输入无 coordinateSpace: parent-relative(v0.5 历史文件/relayout 回退/--coords absolute)
+    → _meta.distillWarnings 警示 + stats 标记;正常 v0.6+ 输入无警示。"""
+    src = FIXTURE.read_text()
+    assert "coordinateSpace: parent-relative" in src
+    out, stats = distill.apply_text(src)
+    assert stats["legacy_coordinate_space"] is False
+    assert "distillWarnings" not in out
+
+    legacy = src.replace("  coordinateSpace: parent-relative\n", "")
+    out2, stats2 = distill.apply_text(legacy)
+    assert stats2["legacy_coordinate_space"] is True
+    doc = yaml.safe_load(out2)
+    warns = doc["_meta"]["distillWarnings"]
+    assert isinstance(warns, list) and any("勿当相对父坐标" in w for w in warns)

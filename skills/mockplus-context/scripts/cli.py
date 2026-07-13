@@ -173,6 +173,9 @@ def action_data(args) -> int:
             print(f"OK: distilled -{dstats['saved_pct']}% "
                   f"(layouts {dstats['layouts_inlined']} inlined, uuid {dstats['uuids']})",
                   file=sys.stderr)
+            if dstats.get("legacy_coordinate_space"):
+                print("WARN: 输入坐标空间非 parent-relative——pos 为原语义(勿当相对父坐标),"
+                      "已写 _meta.distillWarnings", file=sys.stderr)
         except Exception as e:
             print(f"WARN: distill 失败,已回退未蒸馏原文: {e}", file=sys.stderr)
     if args.out and args.out != "-":

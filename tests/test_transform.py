@@ -61,3 +61,37 @@ def test_transform_unhandled_fields_clean_on_fixtures():
         out = transform.transform(data, FAKE_PAGE_META, "test-app")
         assert out["_meta"]["unhandledFields"] == [], \
             f"{name} 产生 unhandledFields: {out['_meta']['unhandledFields']}"
+
+
+def test_multiseg_text_marks_node_level():
+    """多段 text.styles:仅取首段的同时,节点级打 textSegments 警示
+    (页级 warning 消费方看不见;fc 实录首段 fontWeight 600/sharedStyle 实为 medium
+    → 判子字重假 FAIL)。单段不加字段(黄金快照零变化)。"""
+    data = json.load(open(FIXTURES / "simple-text.json"))
+    node = data["layers"]["children"][0]
+    seg = dict(node["text"]["styles"][0])
+    node["text"]["styles"] = [node["text"]["styles"][0], seg]
+    out = transform.transform(data, FAKE_PAGE_META, "test-app")
+
+    hits = []
+
+    def walk(n):
+        if isinstance(n, dict):
+            if "textSegments" in n:
+                hits.append(n)
+            for v in n.values():
+                walk(v)
+        elif isinstance(n, list):
+            for i in n:
+                walk(i)
+
+    walk(out["nodes"])
+    assert len(hits) == 1 and hits[0]["textSegments"] == 2
+    assert any("仅取首段" in w for w in out["_meta"]["warnings"])
+
+    # 单段:无该字段
+    data2 = json.load(open(FIXTURES / "simple-text.json"))
+    out2 = transform.transform(data2, FAKE_PAGE_META, "test-app")
+    hits.clear()
+    walk(out2["nodes"])
+    assert not hits

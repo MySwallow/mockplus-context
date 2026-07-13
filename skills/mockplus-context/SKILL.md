@@ -22,10 +22,16 @@ description: |
 
 v0.7 起 YAML 默认再经**机械蒸馏**(`scripts/distill.py`,实测 −45~48%):
 `layout_*` 查找表内联为节点行内 `pos: {x, y, w, h}`(非默认 mode/sizing 以
-`mode:`/`hsz:`/`vsz:` 键保留),UUID 截前 8 位(确定性、跨拉取稳定);`imageRef`
-资产哈希、fill/textStyle 表、文本内容一律不动。出口不变量自检,任何一条不满足
-即整体回退未蒸馏原文(stderr WARN),绝不出半成品;产物打标 `_meta.distilled: true`。
+`mode:`/`hsz:`/`vsz:` 键保留),UUID 截前 8 位(确定性、跨拉取稳定;**前 8 位与
+YAML 数字形歧义的 id 保留全 UUID**——如 `03450216`,截断会被解析器读成数字);
+`imageRef` 资产哈希、fill/textStyle 表、文本内容一律不动。出口不变量自检,任何一条
+不满足即整体回退未蒸馏原文(stderr WARN),绝不出半成品;产物打标 `_meta.distilled: true`。
 要 v0.6 原形态加 `--raw`;旧文件离线蒸馏:`python3 scripts/distill.py <in> [<out>] [--check-only]`。
+
+两个消费警示:① 蒸馏 v0.5 旧文件会在 `_meta.distillWarnings` 提示坐标空间非
+parent-relative(pos 为原语义=画布绝对坐标,勿当相对父坐标);② TEXT 节点带
+`textSegments: N`(N>1)= 原文有 N 段样式仅取首段,`textStyle` 未必代表整段
+(字重/颜色判定先核 sharedStyle 名)。
 
 启动时声明:**"Using mockplus-context to extract <PAGE_ID> from Mockplus."**
 
