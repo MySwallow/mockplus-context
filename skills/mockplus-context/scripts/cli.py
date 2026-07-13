@@ -152,7 +152,8 @@ def action_data(args) -> int:
     page_meta = next(p for p in pages if p["id"] == target_id)
 
     data = client.get_page_data_cached(app_id, page_meta, refresh=args.refresh)
-    result = _transform.transform(data, page_meta, app_id)
+    result = _transform.transform(data, page_meta, app_id,
+                                  coords=getattr(args, "coords", "relative"))
 
     # 校验:断言关键字段(替代砍掉的 _schema.py)
     try:
@@ -163,8 +164,20 @@ def action_data(args) -> int:
         print(f"ERR: transform 输出校验失败: {e}", file=sys.stderr)
         return 2
 
-    # 输出
+    # 输出(v0.7:YAML 默认经 distill 蒸馏;--raw 或蒸馏失败回退原文,绝不出半成品)
     out_text = _transform.serialize(result, fmt=args.format)
+    if args.format == "yaml" and not getattr(args, "raw", False):
+        try:
+            import distill
+            out_text, dstats = distill.apply_text(out_text)
+            print(f"OK: distilled -{dstats['saved_pct']}% "
+                  f"(layouts {dstats['layouts_inlined']} inlined, uuid {dstats['uuids']})",
+                  file=sys.stderr)
+            if dstats.get("legacy_coordinate_space"):
+                print("WARN: 输入坐标空间非 parent-relative——pos 为原语义(勿当相对父坐标),"
+                      "已写 _meta.distillWarnings", file=sys.stderr)
+        except Exception as e:
+            print(f"WARN: distill 失败,已回退未蒸馏原文: {e}", file=sys.stderr)
     if args.out and args.out != "-":
         Path(args.out).write_text(out_text)
         print(f"OK: 写入 {args.out}", file=sys.stderr)
@@ -244,7 +257,8 @@ def action_all(args) -> int:
     # 1) data → data.yaml
     data_ns = _argparse.Namespace(
         url=args.url, out=str(out_root / "data.yaml"),
-        format="yaml", stats=False, refresh=False,
+        format="yaml", coords=getattr(args, "coords", "relative"),
+        stats=False, refresh=False,
     )
     rc = action_data(data_ns)
     if rc != 0:

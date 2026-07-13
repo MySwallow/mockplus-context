@@ -9,96 +9,79 @@ metadata:
     height: 812
   backgroundColor: '#F5F5F5'
   components:
-    美孚门店通规范/07按钮/01吸底/03结算类/全选+数价:
-      id: E442B0B5-32A4-48BB-ACE2-FAAA59393AD4
-      name: 07按钮/01吸底/03结算类/全选+数价
-      libraryName: 美孚门店通规范
+    Sample UI Kit Spec/Button/Sticky/Checkout:
+      id: FACADE21-0000-4000-8000-000000000000
+      name: Button/Sticky/Checkout
+      libraryName: Sample UI Kit Spec
 nodes:
-- id: 9A894626-5654-4ACE-9C70-217D7BEE7942
-  name: 已经到底了~
-  type: TEXT
-  layout: layout_000001
-  textStyle: 03文字色3/12px/regular/居中对齐 Style
-  text: 已经到底了~
-  fills: fill_000001
-- id: 3DDC4698-9083-427D-B791-46C52A625B4D
-  name: 矩形
+- id: FACADE08-0000-4000-8000-000000000000
+  name: Rectangle
   type: VECTOR
-  layout: layout_000002
+  layout: layout_000001
+  absolutePosition:
+    x: 0
+    y: 428
   fills: fill_000002
-- id: 79F6C990-FFA1-48F3-9AB7-5C8047C31D80
+  children:
+  - id: FACADE15-0000-4000-8000-000000000000
+    name: No more items
+    type: TEXT
+    layout: layout_000002
+    textStyle: TextColor3/12px/Regular/Center Style
+    text: No more items
+    fills: fill_000001
+- id: FACADE11-0000-4000-8000-000000000000
   name: Home Indicator
   type: VECTOR
   layout: layout_000003
   fills: fill_000003
   borderRadius: 100px
-- id: 7EE75B8D-7B0E-4B2C-8BEF-57ADD7070551
-  name: 按钮/背景/其它iPhone
+- id: FACADE13-0000-4000-8000-000000000000
+  name: Button/Bg/Other
   type: VECTOR
   layout: layout_000004
   fills: fill_000004
   borderRadius: 8px
-- id: 02938A52-55B5-40AA-B5DC-5ECA69E98108
-  name: 背景
+- id: FACADE01-0000-4000-8000-000000000000
+  name: Background
   type: VECTOR
   layout: layout_000005
   fills: fill_000005
   effects: effect_000001
-- id: FB632493-1E3B-4E3F-A85C-A9D8431C19D4
+- id: FACADE23-0000-4000-8000-000000000000
   name: Border
   type: VECTOR
   opacity: 0.4
   layout: layout_000006
   strokes: stroke_000001
-- id: A91C3D46-C1B0-4087-863E-7183D1D8C5B0
-  name: 路径备份
+- id: FACADE16-0000-4000-8000-000000000000
+  name: Path
   type: VECTOR
   layout: layout_000007
   fills: fill_000006
-- id: 079AACFE-6C8C-4823-BA15-D6CDEFE7A04D
-  name: 形状结合
+- id: FACADE02-0000-4000-8000-000000000000
+  name: Shape
   type: VECTOR
   layout: layout_000008
   fills: fill_000004
-- id: 0A10D202-AE7F-4271-BBF9-129C9DCFB1BE
-  name: 07按钮/01吸底/03结算类/全选+数价
+- id: FACADE03-0000-4000-8000-000000000000
+  name: Button/Sticky/Checkout
   type: INSTANCE
   layout: layout_000009
-  componentId: 美孚门店通规范/07按钮/01吸底/03结算类/全选+数价
+  absolutePosition:
+    x: 0
+    y: 718
+  componentId: Sample UI Kit Spec/Button/Sticky/Checkout
   children:
-  - id: 150B9D4D-E722-4BF2-AB7B-0467C1334A0D
-    name: 页面内
+  - id: FACADE04-0000-4000-8000-000000000000
+    name: Inside Page
     type: TEXT
     layout: layout_000010
-    textStyle: 09白色/16px/semibold/居中对齐 Style
-    text: 合并转采购
+    textStyle: White/16px/Semibold/Center Style
+    text: Submit
 globalVars:
   styles:
     layout_000001:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      locationRelativeToParent:
-        x: 155
-        y: 440
-      dimensions:
-        width: 66
-        height: 17
-    03文字色3/12px/regular/居中对齐 Style:
-      fontSize: 12
-      fontFamily: PingFang SC
-      fontWeight: 400
-      fontStyle: Regular
-      color: '#999999'
-      lineHeight: 17
-      letterSpacing: 0
-      textAlignHorizontal: CENTER
-    fill_000001:
-    - type: IMAGE
-      imageRef: abc123
-      scaleMode: FILL
-    layout_000002:
       mode: none
       sizing:
         horizontal: fixed
@@ -111,6 +94,30 @@ globalVars:
         height: 48
     fill_000002:
     - '#F5F5F5'
+    layout_000002:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      locationRelativeToParent:
+        x: 155
+        y: 12
+      dimensions:
+        width: 66
+        height: 17
+    TextColor3/12px/Regular/Center Style:
+      fontSize: 12
+      fontFamily: PingFang SC
+      fontWeight: 400
+      fontStyle: Regular
+      color: '#999999'
+      lineHeight: 17
+      letterSpacing: 0
+      textAlignHorizontal: CENTER
+    fill_000001:
+    - type: IMAGE
+      imageRef: abc123
+      scaleMode: FILL
     layout_000003:
       mode: none
       sizing:
@@ -178,8 +185,8 @@ globalVars:
         horizontal: fixed
         vertical: fixed
       locationRelativeToParent:
-        x: 18.0
-        y: 33.0
+        x: 18
+        y: 33
       dimensions:
         width: 10.5
         height: 18.5
@@ -214,11 +221,11 @@ globalVars:
         vertical: fixed
       locationRelativeToParent:
         x: 266
-        y: 737
+        y: 19
       dimensions:
         width: 80
         height: 22
-    09白色/16px/semibold/居中对齐 Style:
+    White/16px/Semibold/Center Style:
       fontSize: 16
       fontFamily: PingFang SC
       fontWeight: 600
@@ -227,9 +234,17 @@ globalVars:
       lineHeight: 22
       textAlignHorizontal: CENTER
 _meta:
-  transformVersion: 0.5.0
+  transformVersion: 0.6.0
+  coordinateSpace: parent-relative
   sketchPluginVersion: 5.0.28
   documentVersion: '1.0'
   inputFieldsTotal: 164
   unhandledFields: []
   warnings: []
+  relayout:
+    reparented: 1
+    adopted: 0
+    ambiguousTies: 0
+    keptViolations: 0
+    zFilter: 'on'
+    zEvidence: '4:0'

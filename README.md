@@ -54,13 +54,18 @@ metadata:
 
 nodes:
   - id: <UUID>
-    name: <node-name>
-    type: TEXT                         # FRAME / TEXT / INSTANCE / RECTANGLE / ELLIPSE / VECTOR
+    name: <card-background>            # 卡片背景:重建后成为真正的容器
+    type: VECTOR                       # FRAME / TEXT / INSTANCE / RECTANGLE / ELLIPSE / VECTOR / IMAGE / SLICE / MASK
     layout: layout_000001              # 引用 globalVars.styles
-    fills: fill_000001
-    text: "<text-content>"
-    textStyle: <sharedStyle.name>      # ← 设计师命名(原样)保留语义,不是 hash
-    children: [...]
+    absolutePosition: { x: <int>, y: <int> }   # 仅容器节点:画布绝对锚点
+    children:
+      - id: <UUID2>
+        name: <node-name>
+        type: TEXT
+        layout: layout_000002
+        fills: fill_000001
+        text: "<text-content>"
+        textStyle: <sharedStyle.name>  # ← 设计师命名(原样)保留语义,不是 hash
 
 globalVars:
   styles:
@@ -68,9 +73,9 @@ globalVars:
       - type: IMAGE
         imageRef: <hash>               # ← hash 跟 ./assets/<hash>.png 一一对应
         scaleMode: FILL
-    layout_000001:
+    layout_000002:
       mode: none
-      locationRelativeToParent: { x: <int>, y: <int> }
+      locationRelativeToParent: { x: <int>, y: <int> }   # 真·相对父坐标(v0.6 起)
       dimensions: { width: <int>, height: <int> }
     <sharedStyle.name>:                # token key 直接复用设计师在 Mockplus 里定义的名字
       fontFamily: <font>
@@ -78,12 +83,18 @@ globalVars:
       fontSize: <px>
 
 _meta:
+  coordinateSpace: parent-relative     # v0.5 旧产物是 absolute-artboard,读旧文件先看这里
+  relayout: { reparented: <int>, ... } # 包含树重建统计
   unhandledFields: []                  # Mockplus schema 升级时这里会列字段
 ```
 
 **关键设计:**
 
-- **Token 复用** — 相同 fill/layout/effect 自动去重,节点上只放引用,YAML 体积下降 ~60%
+- **包含树重建(v0.6)** — Sketch 原始数据里"标题压在导航条上"其实是两个平级兄弟 + 画布绝对坐标;
+  重建后子控件真正嵌套进视觉容器,`locationRelativeToParent` 名副其实,AI 可以直接翻译成
+  `position: relative/absolute` 嵌套结构,不用自己做几何推断
+- **Token 复用** — 相同 fill/layout/effect 自动去重,节点上只放引用;相对化后重复卡片的内部元素
+  共享同一 layout token(真实页 layout token 数再降 ~23%),重复模式对 AI 直接可见
 - **文字样式 key 用设计师命名**(`sharedStyle.name`) — AI 写代码时可以直接复用作 CSS 变量名,语义不丢
 - **切图按需** — AI 看 YAML 才决定下哪些图,不会盲下整页几十张
 - **`_meta.unhandledFields` 探针** — Mockplus 升级 schema 时立刻可见,不静默丢字段
@@ -156,9 +167,11 @@ mockplus-context/
             └── troubleshooting.md         # 错误码 + 诊断
 ```
 
-## 升级到 v0.5
+## 升级说明
 
-v0.5 是 breaking change(从 JSON / hash token key 升级到 YAML / 设计师命名 token key)。如果你之前用 v0.4 老 CLI 命令,迁移指令见 [CHANGELOG.md](CHANGELOG.md) Migration 段(命令映射表 + cookie 路径迁移一键脚本)。
+**v0.6 是 breaking change**:`locationRelativeToParent` 从画布绝对坐标(v0.5 命名 bug)改为真·相对父坐标,节点树按视觉包含重建,layout token 重编号。读旧缓存 YAML 前先看 `_meta.coordinateSpace`(`parent-relative`=新 / `absolute-artboard`=旧);需要旧语义用 `mockplus data/all --coords absolute`。详见 [CHANGELOG.md](CHANGELOG.md) v0.6.0 段。
+
+v0.5 的 breaking change(JSON → YAML、hash token key → 设计师命名)迁移指令见 [CHANGELOG.md](CHANGELOG.md) v0.5.0 Migration 段。
 
 ## 隐私 & 安全
 

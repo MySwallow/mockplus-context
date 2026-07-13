@@ -8,6 +8,11 @@ v0.5.0 输出契约见 docs/superpowers/specs/2026-05-23-mockplus-context-v0.5-d
 - textStyle 是单一字符串引用,key 用 sharedStyle.name(若有);否则 textStyle_NNNNNN
 - 6 位序号(fill_000001),不是 3 位(fill_001)
 - alpha < 1 输出 rgba(r,g,b,a.xx),不是 v0.4 的 #RRGGBB (alpha=0.5)
+
+v0.6.0 新增(见 relayout.py):
+- 默认对输出做包含树重建,locationRelativeToParent 改为真·相对父坐标
+  (_meta.coordinateSpace: parent-relative);容器节点级新增 absolutePosition
+- coords="absolute" 保留 v0.5 绝对坐标语义(_meta.coordinateSpace: absolute-artboard)
 """
 import hashlib
 import math
@@ -16,7 +21,7 @@ from collections import OrderedDict
 from typing import Any, Dict, List, Optional
 
 
-TRANSFORM_VERSION = "0.5.0"
+TRANSFORM_VERSION = "0.6.0"
 
 
 # ============================================================
@@ -285,6 +290,7 @@ BASIC_HANDLED = {
     "id", "sourceID", "type", "realType", "name", "opacity",
     "libraryID", "libraryName", "imageID", "containerSourceName",
     "symbolId", "symbolMasterId",
+    "maskType",  # realType=mask 节点的蒙版类型标志;v0.6 蒙版冻结处理,值无需透出
 }
 
 REAL_TYPE_TO_V5 = {
@@ -300,6 +306,7 @@ REAL_TYPE_TO_V5 = {
     "MSShapeGroup": "VECTOR",  # 形状组,统一按 VECTOR
     "Image": "IMAGE",        # 位图节点;图源常在父 SymbolInstance 或同级 MSSliceLayer 的 slice 上
     "MSSliceLayer": "SLICE", # Sketch 切片层;自带 slice.bitmapURL,与同级 Image 节点配对
+    "mask": "MASK",          # 裁剪蒙版层(真实语料:徽标圆形蒙版);relayout 冻结不参与重建
 }
 
 
@@ -377,6 +384,9 @@ def extract_node(node: dict, ctx: TransformContext,
         st = text_styles[0]
         if len(text_styles) > 1:
             ctx.warn(f"node {nid} 有 {len(text_styles)} 段 text.styles,仅取首段")
+            # 节点级警示:页级 warning 消费方看不见,首段样式可能不代表整段
+            # (fc 实录:首段 fontWeight 600、sharedStyle 实为 medium → 判子字重假 FAIL)
+            out["textSegments"] = len(text_styles)
         # 优先用 sharedStyle.name(若有)
         # Mockplus sharedStyle.type 实际值是 "TextStyle"(大写驼峰)
         shared = node.get("sharedStyle") or {}
@@ -500,8 +510,16 @@ def build_metadata(data: dict, page_meta: dict, app_id: str,
 # 顶层 transform
 # ============================================================
 
-def transform(data: dict, page_meta: dict, app_id: str) -> dict:
-    """sketch JSON → v0.5 结构化 dict。可序列化为 YAML/JSON。"""
+def transform(data: dict, page_meta: dict, app_id: str,
+              coords: str = "relative") -> dict:
+    """sketch JSON → 结构化 dict。可序列化为 YAML/JSON。
+
+    coords="relative"(默认):经 relayout 包含树重建,locationRelativeToParent
+    为真·相对父坐标;coords="absolute":保留 v0.5 画布绝对坐标语义。
+    """
+    if coords not in ("relative", "absolute"):
+        # 边界校验:非法值静默按 absolute 处理会悄悄翻转坐标语义,必须快失败
+        raise ValueError(f"coords 只接受 relative|absolute,收到 {coords!r}")
     ctx = TransformContext()
     layers = data.get("layers") or {}
     root_children = layers.get("children") or []
@@ -517,7 +535,7 @@ def transform(data: dict, page_meta: dict, app_id: str) -> dict:
             })
             ctx.warn(f"root[{i}] transform 失败: {e}")
 
-    return {
+    result = {
         "metadata": build_metadata(data, page_meta, app_id, ctx.components),
         "nodes": nodes,
         "globalVars": {
@@ -525,6 +543,7 @@ def transform(data: dict, page_meta: dict, app_id: str) -> dict:
         },
         "_meta": {
             "transformVersion": TRANSFORM_VERSION,
+            "coordinateSpace": "absolute-artboard",  # relayout 成功后改写为 parent-relative
             "sketchPluginVersion": data.get("pluginVersion", ""),
             "documentVersion": data.get("documentVersion", ""),
             "inputFieldsTotal": ctx.input_field_count,
@@ -532,6 +551,11 @@ def transform(data: dict, page_meta: dict, app_id: str) -> dict:
             "warnings": ctx.warnings,
         },
     }
+
+    if coords == "relative":
+        import relayout
+        result = relayout.apply(result)
+    return result
 
 
 # ============================================================

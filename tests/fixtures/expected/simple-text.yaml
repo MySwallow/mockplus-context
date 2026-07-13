@@ -9,12 +9,12 @@ metadata:
     height: 812
   backgroundColor: '#F5F5F5'
 nodes:
-- id: 9A894626-5654-4ACE-9C70-217D7BEE7942
-  name: 已经到底了~
+- id: FACADE15-0000-4000-8000-000000000000
+  name: No more items
   type: TEXT
   layout: layout_000001
-  textStyle: 03文字色3/12px/regular/居中对齐 Style
-  text: 已经到底了~
+  textStyle: TextColor3/12px/Regular/Center Style
+  text: No more items
 globalVars:
   styles:
     layout_000001:
@@ -28,7 +28,7 @@ globalVars:
       dimensions:
         width: 66
         height: 17
-    03文字色3/12px/regular/居中对齐 Style:
+    TextColor3/12px/Regular/Center Style:
       fontSize: 12
       fontFamily: PingFang SC
       fontWeight: 400
@@ -38,9 +38,17 @@ globalVars:
       letterSpacing: 0
       textAlignHorizontal: CENTER
 _meta:
-  transformVersion: 0.5.0
+  transformVersion: 0.6.0
+  coordinateSpace: parent-relative
   sketchPluginVersion: 5.0.28
   documentVersion: '1.0'
   inputFieldsTotal: 18
   unhandledFields: []
   warnings: []
+  relayout:
+    reparented: 0
+    adopted: 0
+    ambiguousTies: 0
+    keptViolations: 0
+    zFilter: 'on'
+    zEvidence: 0:0
