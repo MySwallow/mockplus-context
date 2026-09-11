@@ -13,7 +13,7 @@ description: |
   Skip ONLY for: Figma URLs, isolated PNG/PDF/screenshot files with no Mockplus link, local .sketch parsing, building a Mockplus-clone product, or Mockplus desktop-app UI bugs.
 ---
 
-# Mockplus Context (v0.7.0)
+# Mockplus Context (v0.7.1)
 
 把 Mockplus develop URL 转换为**结构化 YAML**,LLM 直接消费。v0.6 起输出经过
 **包含树重建**:视觉上压在背景/卡片上的元素真正嵌套为其子节点,

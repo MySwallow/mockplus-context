@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""mockplus-context skill 主入口(v0.7.0)。
+"""mockplus-context skill 主入口(v0.7.1)。
    子命令: data / download / all / tree / cookie
 """
 import argparse
+import os
 import sys
 
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="mockplus",
-        description="Mockplus 设计稿 → YAML/JSON + 切图(v0.7.0)",
+        description="Mockplus 设计稿 → YAML/JSON + 切图(v0.7.1)",
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -65,7 +66,26 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _force_utf8_stdio() -> None:
+    """stdin/stdout/stderr 固定 UTF-8。
+
+    Windows 下重定向到文件/管道时 Python 默认按系统 locale(中文系统 = GBK)编码,
+    中文会变乱码、emoji 直接 UnicodeEncodeError。用户显式设了 PYTHONIOENCODING 则尊重之。
+    """
+    if os.environ.get("PYTHONIOENCODING"):
+        return
+    for stream in (sys.stdin, sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8")
+        except (ValueError, OSError):
+            pass  # 流已关闭/已读过/不可重配:保持原样,不因此中断命令
+
+
 def main(argv=None) -> int:
+    _force_utf8_stdio()
     args = build_parser().parse_args(argv)
     # 延迟 import,避免没装 PyYAML 时也能跑 cookie/tree
     import cli

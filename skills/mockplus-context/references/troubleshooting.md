@@ -164,6 +164,18 @@ pip install -r tests/requirements.txt
 
 确保 cwd 在仓库根目录调用 `python3 skills/mockplus-context/scripts/mockplus.py`,或把 skill 内 `scripts/` 加入 `PYTHONPATH`。
 
+### Windows:`data.yaml` 里中文全是 `�`(如 `name: �ݷü�¼�б�`)
+
+文件按 GBK 写出、被 Claude Code / 编辑器按 UTF-8 读。v0.7.0 及更早版本的文件读写与 stdout 跟随系统 locale(中文 Windows = cp936),v0.7.1 起全部固定 UTF-8。
+
+- **升级到 v0.7.1**,重跑 `mockplus all` / `data`。旧的 GBK 缓存(`%USERPROFILE%\.cache\mockplus\`)会被识别为无效并自动重拉,stderr 会有一行 `WARN: 缓存 ... 不是 UTF-8 JSON`,属正常。
+- **暂时无法升级**:运行前开 Python 的 UTF-8 模式(3.7+),效果等价:
+  ```powershell
+  $env:PYTHONUTF8 = "1"      # PowerShell
+  set PYTHONUTF8=1           # cmd
+  ```
+- 已生成的乱码 `data.yaml` 不必手改,直接重跑覆盖即可。
+
 ---
 
 ## 不在本表里?
@@ -172,4 +184,4 @@ pip install -r tests/requirements.txt
 - 完整命令(打码 cookie / APP_ID)
 - 完整 stderr 输出
 - `mockplus cookie status` 输出
-- macOS / Linux 版本 + Python 版本
+- macOS / Linux / Windows 版本 + Python 版本

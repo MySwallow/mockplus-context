@@ -2,6 +2,21 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/),版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
+## v0.7.1 — 2026-09-11
+
+**Windows 乱码修复:所有文件读写与 stdout/stderr 固定 UTF-8,不再跟随系统 locale。**
+
+### Fixed
+- Windows(中文系统 locale = GBK/cp936)上 `mockplus all` / `data --out` 写出的 `data.yaml` 中文全是 `�`(如 `name: �ݷü�¼�б�`):`cli.py` / `client.py` 里 `Path.read_text` / `write_text` 未指定 encoding,按 GBK 写文件、被下游按 UTF-8 读。现在 data.yaml、assets-manifest.json、cookie 文件、`_index.json` / `data.json` 缓存全部显式 `encoding="utf-8"`
+- 入口 `mockplus.py` 启动时把 stdin/stdout/stderr 重配为 UTF-8(尊重用户显式设置的 `PYTHONIOENCODING`):`data` 走 stdout 重定向、`tree` 打 emoji 到管道、`cookie set` 从管道读入时不再乱码或 `UnicodeEncodeError`。已在 macOS/Linux 模拟非 UTF-8 locale 验证,未在真实 Windows 控制台手工回归
+- 升级路径:v0.7.0 在 Windows 上按 GBK 写出的旧缓存,新鲜期内读到非 UTF-8 / 非 JSON 时告警并视为缓存缺失自动重拉(`_read_json_cache`),不会升级后第一跑就 `UnicodeDecodeError` 崩掉;过期回退同样拒收损坏缓存,抛原网络错误
+
+### Docs
+- `references/troubleshooting.md` 新增 "Windows:data.yaml 里中文全是 �" 条目(升级 / `PYTHONUTF8=1` 临时绕过)
+
+### Tests
+- 新增 `tests/test_encoding.py`(12 用例):子进程 `LC_ALL=C` + 关闭 PEP 538/540 在 macOS/Linux 上复现非 UTF-8 locale(带自证 probe,无法模拟时 skip),覆盖 `data --out` / `data` stdout / `tree` emoji / `cookie set` stdin 四条路径;GBK 旧缓存联网重拉 + 断网抛原错误;静态守门 —— `scripts/*.py` 里任何文本 `open` / `read_text` / `write_text` 必须显式 `encoding`
+
 ## v0.6.0 — 2026-07-07
 
 **包含树重建:子控件真正嵌套进视觉容器,`locationRelativeToParent` 名副其实。**

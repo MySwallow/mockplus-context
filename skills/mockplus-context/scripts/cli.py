@@ -30,7 +30,7 @@ def action_cookie(args) -> int:
             if not p.exists():
                 print(f"ERR: 文件不存在: {p}", file=sys.stderr)
                 return 11
-            content = p.read_text()
+            content = p.read_text(encoding="utf-8")
         elif sys.stdin.isatty():
             print("粘贴 cookie(单行),回车结束:", file=sys.stderr)
             content = sys.stdin.readline()
@@ -179,7 +179,7 @@ def action_data(args) -> int:
         except Exception as e:
             print(f"WARN: distill 失败,已回退未蒸馏原文: {e}", file=sys.stderr)
     if args.out and args.out != "-":
-        Path(args.out).write_text(out_text)
+        Path(args.out).write_text(out_text, encoding="utf-8")
         print(f"OK: 写入 {args.out}", file=sys.stderr)
     else:
         sys.stdout.write(out_text)
@@ -222,7 +222,8 @@ def action_download(args) -> int:
     # 写 manifest
     manifest_fp = out_dir / "assets-manifest.json"
     manifest_fp.write_text(json.dumps({"slices": slices},
-                                       ensure_ascii=False, indent=2))
+                                       ensure_ascii=False, indent=2),
+                           encoding="utf-8")
     print(f"目标切图: {len(slices)} 个 → {out_dir}", file=sys.stderr)
 
     stats = client.download_slices(slices, out_dir)
