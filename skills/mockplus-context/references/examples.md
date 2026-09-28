@@ -1,6 +1,6 @@
 # Examples
 
-端到端调用样例(v0.5),按"用户意图 → 调用 → 产物"组织。
+端到端调用样例,按"用户意图 → 调用 → 产物"组织。
 
 ---
 
@@ -23,18 +23,19 @@ metadata:
   device: ios1x
   size: { width: 375, height: 812 }
 nodes:
-  - id: <UUID>
+  - id: AB12CD01
     name: 顶栏
     type: FRAME
-    layout: layout_000001
+    pos: {x: 0, y: 0, w: 375, h: 64}
+    abs: {x: 0, y: 0}
+    fills: '#FFFFFF'
     children: [...]
 globalVars:
   styles:
-    fill_000001:
-      - '#FFFFFF'
-    layout_000001:
-      mode: none
-      dimensions: { width: 375, height: 64 }
+    Title/17px/Semibold/Center Style:
+      fontFamily: PingFang SC
+      fontSize: 17
+      fontWeight: 600
 ```
 
 ---
@@ -241,25 +242,28 @@ LLM 拿它和项目已有的 CSS 变量 / Tailwind config / 主题文件逐项�
 **Input(用户意图):**
 > "把这个 Mockplus 页面 `https://app.mockplus.cn/app/<APP>/develop/design/<PAGE>` 还原成 Vue 3 + TailwindCSS 的组件"
 
-**LLM 应该跑的步骤序列:**
+**LLM 应该跑的步骤序列**(对应 SKILL.md「还原工作流」清单):
 
 ```bash
-# Step 1: 拿 YAML 数据
+# 1. 定位:URL 是 page,cookie 已配置
+mockplus cookie status
+
+# 2. 取结构(stderr 出现 WARN 超预算 → outline → data --node 按区块拉)
 mockplus data '<URL>' --out page.yaml
 
-# Step 2: 读 page.yaml,扫所有 fills 引用 IMAGE 的 globalVars.styles entries,
-#         收集 imageRef hash 列表
+# 3. 取视觉基准(验收标准)
+mockplus shot '<URL>' --out ./shots
 
-# Step 3: 按 hash 下切图(只下需要的,不下所有)
-mockplus download '<URL>' --nodes <hash1>,<hash2>,<hash3> --out ./public/assets
+# 4. 取资产:扫 globalVars.styles 里 type: IMAGE 的 imageRef,只下要用的
+mockplus download '<URL>' --nodes <hash1>,<hash2> --out ./src/assets
+mockplus outline '<URL>' | grep missingSlice     # 缺切图的图标,按实现守则处理
 
-# Step 4: 视觉对照(可选,debug 时用)
-mockplus download '<URL>' --include-design --out ./tmp
+# 5. 对齐项目:查已有组件 / CSS 变量 / Tailwind config,textStyle、颜色映射到项目 token
 
-# Step 5: 基于 page.yaml 写 Vue 组件:
-#         - metadata.size → container width/height
-#         - globalVars.styles.layout_NNNNNN → 绝对定位 / 尺寸
-#         - globalVars.styles.fill_NNNNNN(hex 或 IMAGE) → bg-color / bg-image
-#         - globalVars.styles.<sharedStyle.name>(textStyle) → 字号字重颜色
-#         - nodes 树 → Vue template 嵌套
+# 6. 写 Vue 组件:
+#    - nodes 树 → template 嵌套;pos 读间距/对齐,落地用 flex/grid,只有叠放才绝对定位
+#    - fills '#hex' → 背景色;fill_NNNNNN(IMAGE)→ 下载好的切图
+#    - textStyle → 项目字体 token(字号/字重/行高/颜色)
+
+# 7. 自验:渲染截图与 ./shots 逐项比(布局/文字/外观/资产),有差异修完再比
 ```

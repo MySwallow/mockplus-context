@@ -305,7 +305,7 @@ def apply_text(src: str) -> tuple:
     if legacy_space:
         stamp += ("  distillWarnings:\n"
                   "  - '输入无 coordinateSpace: parent-relative 标记——pos 为输入原语义"
-                  "(v0.5 历史文件是画布绝对坐标),勿当相对父坐标消费'\n")
+                  "(重建回退 / --coords absolute / 旧版产物是画布绝对坐标),勿当相对父坐标消费'\n")
     out, n = re.subn(r"^_meta:\n", stamp, out, count=1, flags=re.M)
     if n != 1:
         raise DistillError("_meta 块缺失,无法打蒸馏标")
@@ -370,7 +370,7 @@ def main(argv=None) -> int:
           f"{' skipped=' + ','.join(stats['layouts_skipped']) if stats['layouts_skipped'] else ''}, "
           f"uuid {stats['uuids']}", file=sys.stderr)
     if stats["legacy_coordinate_space"]:
-        print(f"WARN {src_path}: 输入坐标空间非 parent-relative(v0.5 历史文件?)——"
+        print(f"WARN {src_path}: 输入坐标空间非 parent-relative(画布绝对坐标?)——"
               f"pos 为原语义,已写 _meta.distillWarnings", file=sys.stderr)
     if check_only:
         return 0

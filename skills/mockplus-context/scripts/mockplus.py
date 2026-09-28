@@ -31,9 +31,9 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--format", choices=["yaml", "json"], default="yaml")
     g.add_argument("--coords", choices=["relative", "absolute"], default="relative",
                    help="坐标语义:relative=包含树重建+相对父坐标(默认);"
-                        "absolute=v0.5 画布绝对坐标(回滚通道)")
+                        "absolute=不重建、画布绝对坐标(回滚通道)")
     g.add_argument("--raw", action="store_true",
-                   help="输出未蒸馏原文(v0.6 形态;默认 YAML 经 distill 蒸馏 −~49%)")
+                   help="输出未蒸馏原文(完整 UUID + layout 查找表;默认 YAML 经 distill 蒸馏)")
     g.add_argument("--node", default=None, metavar="ID[,ID...]",
                    help="只输出指定节点子树(id 取自 outline 或蒸馏 YAML;≥8 位前缀即可)")
     g.add_argument("--stats", action="store_true", help="额外打印统计到 stderr")

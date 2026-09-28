@@ -209,15 +209,14 @@ pip install -r tests/requirements.txt
 
 ### Windows:`data.yaml` 里中文全是 `�`(如 `name: �ݷü�¼�б�`)
 
-文件按 GBK 写出、被 Claude Code / 编辑器按 UTF-8 读。v0.7.0 及更早版本的文件读写与 stdout 跟随系统 locale(中文 Windows = cp936),v0.7.1 起全部固定 UTF-8。
+文件按 GBK(中文 Windows 系统 locale = cp936)写出、被 Claude Code / 编辑器按 UTF-8 读。本工具的文件读写与 stdout 固定 UTF-8,出现乱码通常是拿到了按系统 locale 写出的旧文件或旧缓存。
 
-- **升级到 v0.7.1**,重跑 `mockplus all` / `data`。旧的 GBK 缓存(`%USERPROFILE%\.cache\mockplus\`)会被识别为无效并自动重拉,stderr 会有一行 `WARN: 缓存 ... 不是 UTF-8 JSON`,属正常。
-- **暂时无法升级**:运行前开 Python 的 UTF-8 模式(3.7+),效果等价:
+- 重跑 `mockplus all` / `data` 覆盖即可,乱码的 `data.yaml` 不必手改。GBK 缓存(`%USERPROFILE%\.cache\mockplus\`)会被识别为无效并自动重拉,stderr 会有一行 `WARN: 缓存 ... 不是 UTF-8 JSON`,属正常。
+- 仍然乱码:运行前开 Python 的 UTF-8 模式(3.7+):
   ```powershell
   $env:PYTHONUTF8 = "1"      # PowerShell
   set PYTHONUTF8=1           # cmd
   ```
-- 已生成的乱码 `data.yaml` 不必手改,直接重跑覆盖即可。
 
 ---
 
