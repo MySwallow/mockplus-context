@@ -242,7 +242,7 @@ LLM 拿它和项目已有的 CSS 变量 / Tailwind config / 主题文件逐项�
 **Input(用户意图):**
 > "把这个 Mockplus 页面 `https://app.mockplus.cn/app/<APP>/develop/design/<PAGE>` 还原成 Vue 3 + TailwindCSS 的组件"
 
-**LLM 应该跑的步骤序列**(对应 SKILL.md「还原工作流」清单):
+**LLM 应该跑的步骤序列**(对应 SKILL.md「取数工作流」):
 
 ```bash
 # 1. 定位:URL 是 page,cookie 已配置
@@ -251,19 +251,15 @@ mockplus cookie status
 # 2. 取结构(stderr 出现 WARN 超预算 → outline → data --node 按区块拉)
 mockplus data '<URL>' --out page.yaml
 
-# 3. 取视觉基准(验收标准)
+# 3. 取截图(视觉对照)
 mockplus shot '<URL>' --out ./shots
 
 # 4. 取资产:扫 globalVars.styles 里 type: IMAGE 的 imageRef,只下要用的
 mockplus download '<URL>' --nodes <hash1>,<hash2> --out ./src/assets
 mockplus outline '<URL>' | grep missingSlice     # 缺切图的图标,按实现守则处理
 
-# 5. 对齐项目:查已有组件 / CSS 变量 / Tailwind config,textStyle、颜色映射到项目 token
-
-# 6. 写 Vue 组件:
+# 数据齐了,按 SKILL.md「实现守则」写 Vue 组件:
 #    - nodes 树 → template 嵌套;pos 读间距/对齐,落地用 flex/grid,只有叠放才绝对定位
 #    - fills '#hex' → 背景色;fill_NNNNNN(IMAGE)→ 下载好的切图
 #    - textStyle → 项目字体 token(字号/字重/行高/颜色)
-
-# 7. 自验:渲染截图与 ./shots 逐项比(布局/文字/外观/资产),有差异修完再比
 ```

@@ -40,20 +40,9 @@ python3 skills/mockplus-context/scripts/mockplus.py cookie set
 
 Cookie 默认存到 `~/.config/mockplus/cookie`,有效期约 30 天。401 时让用户 `cookie set` 重配。
 
-## 还原工作流
+## 取数工作流
 
-还原页面/区块时把这份清单复制到回复里,逐项勾选推进(只读数据、只下切图时做到对应步骤即可):
-
-```
-Mockplus 还原进度:
-- [ ] 1. 定位页面:确认是 page URL
-- [ ] 2. 取结构:data(超预算或只做局部 → outline → data --node)
-- [ ] 3. 取视觉基准:shot 截图
-- [ ] 4. 取资产:下载切图,记下 missingSlice 节点
-- [ ] 5. 对齐项目:token、组件、代码约定
-- [ ] 6. 实现:按「实现守则」
-- [ ] 7. 自验:对照截图逐项比,修到一致再汇报
-```
+按需求走到对应步骤即可:只要结构停在第 2 步,只要切图走 1 → 4。
 
 ### 1. 定位页面
 
@@ -66,15 +55,14 @@ Mockplus 还原进度:
 - `mockplus data <URL> --out page.yaml`,读产物(字段语义见「读懂 YAML」)
 - stderr 出现 `WARN: 输出约 N token` = 整页超过单次读取预算,**不要硬读整份**:
   `mockplus outline <URL>` 看区块(每行:类型/名称/id/画布坐标/子孙数/首段文本)→
-  `mockplus data <URL> --node <id1>,<id2> --out part.yaml` 只拉要做的区块;仍超预算就挑更小的子区块
-- 只做页面某一块时同样 outline → `--node`,不必拉整页
-- 尺寸、间距、颜色、字号一律取自 YAML,不要凭截图目测或凭经验猜
+  `mockplus data <URL> --node <id1>,<id2> --out part.yaml` 只拉需要的区块;仍超预算就挑更小的子区块
+- 只需要页面某一块时同样 outline → `--node`,不必拉整页
 
-### 3. 取视觉基准
+### 3. 取截图
 
 - `mockplus shot <URL> --node <id>` 按区块裁出 @2x 截图(省略 `--node` = 整页)
-- **截图是视觉验收的标准**:YAML 给精确数值,截图用来理解层次、叠放和 YAML 表达不了的外观
-  (如 `missingSlice: vector` 到底是不是图标)。两者对不上时以截图为准,并在汇报里说明
+- 尺寸、间距、颜色、字号以 YAML 为准;截图用来理解层次、叠放和 YAML 表达不了的外观
+  (如 `missingSlice: vector` 到底是不是图标)
 
 ### 4. 取资产
 
@@ -83,28 +71,12 @@ Mockplus 还原进度:
 - stderr `NOTE: N 个疑似图标没有切图` → 带 `missingSlice` 的节点没有资产文件,按「实现守则」处理;
   列清单用 `mockplus outline <URL> | grep missingSlice`
 
-### 5. 对齐项目
+### 5. 取 token 汇总(多页 / 整个模块时)
 
-- 多页 / 整个模块:先 `mockplus tokens <分组 URL 或 APP_ID>`,把颜色/文字样式/圆角/阴影逐项映射到
-  项目已有 token(CSS 变量、Tailwind config、主题文件),缺的补成项目 token,再写页面
-- 单页:动手前至少查一遍项目已有的组件、token、样式变量
-- YAML 描述的是设计,不是代码风格:框架、组件拆分、命名、状态管理、数据获取都沿用项目现有写法
+- `mockplus tokens <分组 URL 或 APP_ID>`:实际用到的颜色/文字样式/圆角/阴影/渐变及使用次数,
+  供下游映射到项目已有 token
 
-### 6. 实现
-
-按下方「实现守则」。
-
-### 7. 自验(反馈循环)
-
-渲染实现并截图,与第 3 步的截图逐项比对:
-
-- 布局:间距、对齐、尺寸
-- 文字:内容、字号、字重、行高、颜色
-- 外观:背景、描边、圆角、阴影、渐变
-- 资产:切图位置与尺寸正确;`missingSlice` 已按守则处理
-
-有差异 → 修 → 再比,直到一致才汇报。只核对被要求的页面/区块;环境里有 UI 自检类 skill 时交给它执行。
-汇报时列出:偏离设计之处及原因、`missingSlice` 清单及处理方式。
+数据交给下游(代码生成、对照还原等)时,遵循下方「实现守则」。
 
 ## 实现守则(把数据翻成代码时)
 
@@ -119,10 +91,8 @@ Mockplus 还原进度:
 - **布局翻成项目原生写法**:`pos` 是相对父容器的设计快照,用来读间距、对齐、尺寸;落地优先
   flex/grid(或 Flutter Row/Column 等),只有确实叠放/浮层的元素才用绝对定位。
   `metadata.size.width` 是设计稿宽度,别写死成页面容器宽
-- **先复用再新建**:INSTANCE 的 `componentId` 指向设计组件库,项目里有对应组件就用它;
-  textStyle 是设计师命名,可映射到项目字体 token
-- **项目 token 与设计值不一致时**:用项目 token 保持一致性,但间距/尺寸要调到视觉上与设计一致
-- **偏离设计要说明**:因可访问性、技术约束等必须偏离时,在代码注释里写原因,汇报时列出
+- **先复用再新建**:动手前查项目已有组件、设计 token、样式变量;INSTANCE 的 `componentId`
+  指向设计组件库,项目里有对应组件就用它;textStyle 是设计师命名,可映射到项目字体 token
 
 ## 读懂 YAML
 
