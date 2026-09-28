@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""mockplus-context skill 主入口(v0.8.0)。
-   子命令: data / outline / download / all / tree / cookie
+"""mockplus-context skill 主入口(v0.9.0)。
+   子命令: data / outline / shot / tokens / download / all / tree / cookie
 """
 import argparse
 import os
@@ -20,7 +20,7 @@ def _nonneg_int(value: str) -> int:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="mockplus",
-        description="Mockplus 设计稿 → YAML/JSON + 切图(v0.8.0)",
+        description="Mockplus 设计稿 → YAML/JSON + 切图(v0.9.0)",
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -44,6 +44,23 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("url", help="完整 URL 或 <APP_ID>:<PAGE_ID>")
     g.add_argument("--depth", type=_nonneg_int, default=None,
                    help="只展开到第 N 层(0 = 仅顶层;默认全部容器)")
+    g.add_argument("--refresh", action="store_true", help="跳过 cache 重拉")
+
+    # shot
+    g = sub.add_parser("shot", help="按区块裁剪整页截图(视觉对照/缺切图参考)")
+    g.add_argument("url", help="完整 URL 或 <APP_ID>:<PAGE_ID>")
+    g.add_argument("--node", default=None, metavar="ID[,ID...]",
+                   help="要裁的节点(同 data --node);省略则输出整页 design.png")
+    g.add_argument("--pad", type=_nonneg_int, default=0,
+                   help="四周外扩(设计单位 px,默认 0)")
+    g.add_argument("--out", help="输出目录(默认 ./mockplus-shots/<PAGE_ID>/)")
+    g.add_argument("--refresh", action="store_true", help="跳过 cache 重拉(含截图)")
+
+    # tokens
+    g = sub.add_parser("tokens", help="设计 token 汇总(颜色/文字样式/圆角/阴影/渐变)")
+    g.add_argument("target", help="页面 URL / 分组 URL / <APP_ID>[:<PAGE或GROUP_ID>]")
+    g.add_argument("--format", choices=["yaml", "json"], default="yaml")
+    g.add_argument("--out", default="-", help="输出路径(默认 stdout)")
     g.add_argument("--refresh", action="store_true", help="跳过 cache 重拉")
 
     # download
@@ -117,6 +134,10 @@ def main(argv=None) -> int:
         return cli.action_data(args)
     if args.cmd == "outline":
         return cli.action_outline(args)
+    if args.cmd == "shot":
+        return cli.action_shot(args)
+    if args.cmd == "tokens":
+        return cli.action_tokens(args)
     if args.cmd == "download":
         return cli.action_download(args)
     if args.cmd == "all":

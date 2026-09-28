@@ -128,6 +128,24 @@ Mockplus 升级了 sketch schema,有新字段没消费。
 
 ---
 
+### stderr:`NOTE: N 个疑似图标没有切图`
+
+不是错误。Mockplus 只导出设计师标注过的切图,没标的图标拿不到资产文件;这些节点带
+`missingSlice: icon`(名称命中,基本确定)或 `missingSlice: vector`(小尺寸矢量形状,需对照截图判断)。
+处理顺序见 SKILL.md「实现守则」:先找项目现成图标 → 找不到列清单向设计师要切图:
+
+```bash
+mockplus outline '<URL>' | grep missingSlice          # 列出全部缺切图节点
+mockplus shot '<URL>' --node AB12CD08,AB12CD09 --pad 4 # 裁参考图附在清单里
+```
+
+### `mockplus shot`:exit 24
+
+- `该页没有整页截图(imageURL 为空)`:页面还没生成预览图,在 Mockplus 里重新上传/同步设计稿
+- `design.png 下载失败`:CDN 临时不通或预签名链接过期 → 加 `--refresh` 重拉
+- `没有可用的裁剪工具`:`pip install Pillow`;macOS 会自动退到系统自带 `sips`
+- `无几何信息或完全在截图外,跳过`(WARN):该节点没有坐标或坐标在画布外,换它的父容器裁
+
 ## 切图下载类
 
 ### `mockplus download`:`目标切图: 0 个`

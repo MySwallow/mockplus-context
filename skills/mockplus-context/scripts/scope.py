@@ -132,6 +132,28 @@ def _with_abs(node: dict, box, relative: bool) -> dict:
     return out
 
 
+def _index(result: dict) -> Dict[str, tuple]:
+    """大写 id → (node, 画布绝对框, 祖先 id 元组)。"""
+    index = {}
+    for n, _depth, box, anc in _walk(result):
+        if isinstance(n.get("id"), str):
+            index[n["id"].upper()] = (n, box, anc)
+    return index
+
+
+def locate(result: dict, queries: List[str]) -> List[Tuple[dict, Optional[tuple]]]:
+    """按 --node 口径解析 id,返回 [(node, 画布绝对框)](按给定顺序去重)。失败抛 ScopeError。"""
+    if not queries:
+        raise ScopeError("--node 为空")
+    index = _index(result)
+    keys = []
+    for q in queries:
+        key = _resolve(index, q)
+        if key not in keys:
+            keys.append(key)
+    return [(index[k][0], index[k][1]) for k in keys]
+
+
 def select(result: dict, queries: List[str]) -> Tuple[dict, List[str]]:
     """裁出 queries 指定的子树。返回 (新 result, 提示信息列表)。
 
@@ -142,10 +164,7 @@ def select(result: dict, queries: List[str]) -> Tuple[dict, List[str]]:
     if not queries:
         raise ScopeError("--node 为空")
     relative = (result.get("_meta") or {}).get("coordinateSpace") == "parent-relative"
-    index = {}
-    for n, _depth, box, anc in _walk(result):
-        if isinstance(n.get("id"), str):
-            index[n["id"].upper()] = (n, box, anc)
+    index = _index(result)
 
     chosen = []
     for q in queries:
@@ -217,7 +236,7 @@ def render_outline(result: dict, id_map: Optional[dict] = None,
                    max_depth: Optional[int] = None,
                    page_tokens: Optional[int] = None,
                    fetch_hint: str = "") -> str:
-    """整页大纲:容器节点(有子节点)+ 顶层节点,每个一行。
+    """整页大纲:容器节点(有子节点)+ 顶层节点 + 缺切图节点,每个一行。
 
     行格式:`[TYPE] "图层名" #id @x,y wxh n=子孙数 text="子树最靠上的文本"`
     坐标为画布绝对坐标;同级按阅读顺序(y 再 x)排,不是 YAML 里的图层 z 序;
@@ -236,6 +255,10 @@ def render_outline(result: dict, id_map: Optional[dict] = None,
              "n = 子孙节点数;text = 子树最靠上的文本"]
     if fetch_hint:
         lines.append(f"# 下钻: {fetch_hint}")
+    missing = sum(1 for n, _d, _b, _a in _walk(result) if n.get("missingSlice"))
+    if missing:
+        lines.append(f"# 疑似图标无切图 {missing} 个(行尾 missingSlice=icon|vector),"
+                     f"处理见 SKILL「实现守则」;截图参考: mockplus shot <URL> --node <id>")
 
     # 以节点对象身份为键:前提是本次调用内 result 不被改写/替换节点(render 只读)
     boxes = {id(n): box for n, _d, box, _a in _walk(result)}
@@ -249,7 +272,7 @@ def render_outline(result: dict, id_map: Optional[dict] = None,
     def emit(nodes, depth):
         for n in reading_order(nodes):
             kids = n.get("children") or []
-            if kids or depth == 0:
+            if kids or depth == 0 or n.get("missingSlice"):
                 lines.append("  " * depth + _outline_line(n, boxes.get(id(n)), kids, boxes, id_map))
             if kids and (max_depth is None or depth < max_depth):
                 emit(kids, depth + 1)
@@ -272,4 +295,6 @@ def _outline_line(n: dict, box, kids: list, boxes: dict, id_map: dict) -> str:
     text = _top_text(n, boxes)
     if text:
         parts.append(f'text="{text}"')
+    if n.get("missingSlice"):
+        parts.append(f"missingSlice={n['missingSlice']}")
     return " ".join(parts)

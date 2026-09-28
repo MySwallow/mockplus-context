@@ -102,6 +102,10 @@ _meta:
   `data --node <id>` 只拉选中区块;整页超出 AI 单次读取预算时 stderr 直接给出这两步命令
 - **去噪(v0.8)** — 默认产物删掉 `编组 2`/`矩形备份 3` 这类自动图层名和与文本重复的图层名,
   纯色填充直接写在节点上,出口逐节点语义比对,任何偏差回退原文(`--raw` 可拿完整原形态)
+- **缺切图检测(v0.9)** — Mockplus 只导出设计师标注的切图(真实项目里图标 91% 没切图);
+  像图标却没切图的节点标 `missingSlice`,AI 会先找项目现成图标、找不到就列清单找设计师要,不自绘
+- **区块截图 + token 汇总(v0.9)** — `mockplus shot --node <id>` 按区块裁 @2x 截图(整页长图读进
+  模型会被缩糊);`mockplus tokens <分组或项目>` 汇总颜色/文字样式/圆角/阴影及使用次数,先对齐项目 token 再写代码
 
 ## 一站式产物
 
@@ -130,8 +134,10 @@ skill 本体在仓库的 `skills/mockplus-context/` 子目录里(自包含)。Cl
 git clone https://github.com/MySwallow/mockplus-context.git
 ln -s "$(pwd)/mockplus-context/skills/mockplus-context" ~/.claude/skills/mockplus-context
 
-# 安装 skill 唯一外部依赖
+# 安装 skill 唯一必需依赖
 pip install PyYAML
+# 可选:shot 区块截图裁剪用(macOS 自带 sips 可替代)
+pip install Pillow
 ```
 
 > 不想用软链?把 `mockplus-context/skills/mockplus-context/` 整个目录拷贝到 `~/.claude/skills/` 下也行(代价:每次更新要重新拷)。
@@ -163,11 +169,13 @@ mockplus-context/
         ├── SKILL.md                       # LLM 入口(触发条件 + 输出契约 + 失败处理)
         ├── scripts/                       # Python 实现(LLM 间接调用)
         │   ├── mockplus.py                # argparse 入口
-        │   ├── cli.py                     # 6 个 action 实现
+        │   ├── cli.py                     # 8 个 action 实现
         │   ├── transform.py               # sketch JSON → 结构化 YAML
         │   ├── relayout.py                # 包含树重建 + 相对坐标
         │   ├── distill.py                 # 蒸馏 + 去噪(省 token)
         │   ├── scope.py                   # outline 大纲 + --node 子树裁剪
+        │   ├── assets.py                  # 缺切图检测 + 截图裁剪
+        │   ├── tokens.py                  # 设计 token 汇总
         │   └── client.py                  # API + cookie + CDN 下载
         └── references/                    # LLM 按需深读
             ├── examples.md                # 端到端调用样例

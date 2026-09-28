@@ -183,6 +183,59 @@ mockplus data '<URL>' --node AB12CD06 --out rank-card.yaml
 
 ---
 
+## 例 7:缺切图图标 + 区块截图
+
+**Input(用户意图):**
+> "把这个卡片还原成组件"
+> *(`mockplus data` stderr 出现 `NOTE: 3 个疑似图标没有切图(icon 2 / vector 1,节点标 missingSlice)`)*
+
+**Step 1 — 找出缺切图的节点并裁参考图:**
+```bash
+mockplus outline '<URL>' | grep missingSlice
+#   [INSTANCE] "icon/arrow-right" #AB12CD08 @339,840 12x12 n=1 missingSlice=icon
+#   [VECTOR] #AB12CD09 @24,1170 16x16 missingSlice=vector
+mockplus shot '<URL>' --node AB12CD08,AB12CD09 --pad 4 --out ./shots
+# ./shots/AB12CD08.png  #AB12CD08 @339,840 12x12 → 40x40px @2x
+```
+
+**Step 2 — 按「实现守则」处理:** 项目里有 `ArrowRight` 图标组件 → 直接用;第二个找不到 →
+写进汇报清单(id + 参考图)请用户找设计师补切图,代码里用参考图临时顶替并标 TODO。
+
+---
+
+## 例 8:整个模块的设计 token 汇总
+
+**Input(用户意图):**
+> "这个模块要开发十几个页面,先把颜色和字体规范理一下"
+
+**Command:**
+```bash
+mockplus tokens '<分组 URL>' --out tokens.yaml    # 或 mockplus tokens <APP_ID> 汇总整个项目
+```
+
+**Output(`tokens.yaml` 片段):**
+```yaml
+scope: {kind: group, id: <GROUP_ID>, name: <Module>, pages: 28}
+colors:
+- value: '#262626'
+  uses: 477
+  roles: {text: 396, fill: 81}
+typography:
+- fontFamily: PingFang SC
+  fontSize: 14
+  fontWeight: 600
+  lineHeight: 20
+  color: '#262626'
+  uses: 97
+  names: [TextColor1/14px/Semibold/Left Style, TextColor1/14px/Semibold/Center Style]
+radii:
+- {value: 8px, uses: 212}
+```
+
+LLM 拿它和项目已有的 CSS 变量 / Tailwind config / 主题文件逐项对齐,缺的补成项目 token,再开始写页面。
+
+---
+
 ## 组合:典型还原 UI 工作流
 
 **Input(用户意图):**

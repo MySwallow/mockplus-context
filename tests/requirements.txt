@@ -1,2 +1,4 @@
 pytest>=7
 PyYAML>=6
+# 可选运行时依赖(shot 裁剪;缺失时 macOS 退到 sips),测试覆盖 Pillow 路径
+Pillow>=9
