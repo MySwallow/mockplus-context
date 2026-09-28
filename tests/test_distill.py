@@ -100,3 +100,110 @@ def test_legacy_coordinate_space_warned():
     doc = yaml.safe_load(out2)
     warns = doc["_meta"]["distillWarnings"]
     assert isinstance(warns, list) and any("勿当相对父坐标" in w for w in warns)
+
+
+# ------------------------------------------------------------
+# v0.8 去噪:abs 行内化 / 单色 fill 直写 / 图层名去噪 + 出口语义比对
+# ------------------------------------------------------------
+
+EXPECTED_DIR = FIXTURE.parent
+
+
+def _nodes_by_id(doc):
+    out = {}
+
+    def walk(ns):
+        for n in ns or []:
+            out[n["id"]] = n
+            walk(n.get("children"))
+    walk(doc["nodes"])
+    return out
+
+
+def test_abs_block_inlined():
+    src = FIXTURE.read_text(encoding="utf-8")
+    out, stats = distill.apply_text(src)
+    assert "absolutePosition:" not in out
+    assert "  abs: {x: 0, y: 428}\n" in out
+    assert stats["abs_inlined"] == src.count("absolutePosition:")
+
+
+def test_solid_fill_inlined_and_defs_removed():
+    out, stats = distill.apply_text(FIXTURE.read_text(encoding="utf-8"))
+    doc = yaml.safe_load(out)
+    nodes = _nodes_by_id(doc)
+    assert nodes["FACADE08"]["fills"] == "#F5F5F5"
+    assert not any(k.startswith("fill_") for k in doc["globalVars"]["styles"]), \
+        "该夹具的 fill 全是单色,定义应全部删掉"
+    assert stats["fills_inlined"] > 0
+
+
+@pytest.mark.parametrize("fixture", ["with-gradients.yaml", "with-slices.yaml"])
+def test_gradient_and_image_fills_stay_as_refs(fixture):
+    src = (EXPECTED_DIR / fixture).read_text(encoding="utf-8")
+    out, _ = distill.apply_text(src)
+    doc = yaml.safe_load(out)
+    styles = doc["globalVars"]["styles"]
+    for n in _nodes_by_id(doc).values():
+        f = n.get("fills")
+        if isinstance(f, str) and f.startswith("fill_"):
+            assert f in styles
+            assert isinstance(styles[f][0], dict), "留作引用的只能是渐变/切图"
+    assert out.count("imageRef") == src.count("imageRef")
+
+
+def test_auto_and_same_as_text_names_dropped():
+    out, stats = distill.apply_text(FIXTURE.read_text(encoding="utf-8"))
+    nodes = _nodes_by_id(yaml.safe_load(out))
+    for nid in ("FACADE08", "FACADE16", "FACADE02"):  # Rectangle / Path / Shape
+        assert "name" not in nodes[nid]
+    assert "name" not in nodes["FACADE15"], "TEXT 图层名 == 文本内容,应删"
+    assert nodes["FACADE04"]["name"] == "Inside Page", "TEXT 图层名 != 文本内容,保留"
+    assert nodes["FACADE11"]["name"] == "Home Indicator"
+    assert stats["names_dropped"] == {"auto": 3, "sameAsText": 1}
+
+
+@pytest.mark.parametrize("name", [
+    "编组", "编组 2", "矩形备份 3", "编组 2备份 3", "Rectangle 2 Copy 2备份 6",
+    "矩形 copy备份 2", "Group", "Rectangle Copy", "形状结合", "椭圆形", "路径备份"])
+def test_is_auto_name_positive(name):
+    assert distill.is_auto_name(name)
+
+
+@pytest.mark.parametrize("name", [
+    "背景", "编组标题", "Lines", "Rectangle Copy [6 16]", "商品卡片", "层叠 3",
+    "Home Indicator", "", None, 12])
+def test_is_auto_name_negative(name):
+    assert not distill.is_auto_name(name)
+
+
+@pytest.mark.parametrize("fixture", sorted(p.name for p in EXPECTED_DIR.glob("*.yaml")))
+def test_every_fixture_distills_and_passes_semantic_check(fixture):
+    src = (EXPECTED_DIR / fixture).read_text(encoding="utf-8")
+    out, _ = distill.apply_text(src)
+    assert yaml.safe_load(out)["_meta"]["distillVersion"] == 2
+
+
+def test_semantic_check_catches_wrongly_dropped_name(monkeypatch):
+    """文本级去噪若误删有语义的图层名,出口语义比对必须整体拒绝。"""
+    def bad_drop(text):
+        return text.replace("  name: Home Indicator\n", ""), 0, 0
+    monkeypatch.setattr(distill, "_drop_names", bad_drop)
+    with pytest.raises(distill.DistillError, match="误删"):
+        distill.apply_text(FIXTURE.read_text(encoding="utf-8"))
+
+
+def test_uuid_inside_text_content_aborts_instead_of_rewriting():
+    """文本内容里夹带 UUID 时,全局截断会改写文本——语义比对拒绝,回退未蒸馏原文。"""
+    src = FIXTURE.read_text(encoding="utf-8").replace(
+        "text: Submit\n", "text: order ABCDEF01-1111-4111-8111-111111111111\n")
+    with pytest.raises(distill.DistillError, match="语义比对"):
+        distill.apply_text(src)
+
+
+def test_uuid_map_matches_distilled_ids():
+    src = FIXTURE.read_text(encoding="utf-8")
+    out, _ = distill.apply_text(src)
+    id_map = distill.uuid_map(src)
+    assert id_map["FACADE08-0000-4000-8000-000000000000"] == "FACADE08"
+    assert set(_nodes_by_id(yaml.safe_load(out))) <= set(id_map.values())

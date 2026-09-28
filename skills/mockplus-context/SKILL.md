@@ -13,7 +13,7 @@ description: |
   Skip ONLY for: Figma URLs, isolated PNG/PDF/screenshot files with no Mockplus link, local .sketch parsing, building a Mockplus-clone product, or Mockplus desktop-app UI bugs.
 ---
 
-# Mockplus Context (v0.7.1)
+# Mockplus Context (v0.8.0)
 
 把 Mockplus develop URL 转换为**结构化 YAML**,LLM 直接消费。v0.6 起输出经过
 **包含树重建**:视觉上压在背景/卡片上的元素真正嵌套为其子节点,
@@ -24,8 +24,12 @@ v0.7 起 YAML 默认再经**机械蒸馏**(`scripts/distill.py`,实测 −45~48%
 `layout_*` 查找表内联为节点行内 `pos: {x, y, w, h}`(非默认 mode/sizing 以
 `mode:`/`hsz:`/`vsz:` 键保留),UUID 截前 8 位(确定性、跨拉取稳定;**前 8 位与
 YAML 数字形歧义的 id 保留全 UUID**——如 `03450216`,截断会被解析器读成数字);
-`imageRef` 资产哈希、fill/textStyle 表、文本内容一律不动。出口不变量自检,任何一条
-不满足即整体回退未蒸馏原文(stderr WARN),绝不出半成品;产物打标 `_meta.distilled: true`。
+`imageRef` 资产哈希、textStyle 表、文本内容一律不动。
+v0.8 追加**去噪**(68 页真实语料再 −12%):容器 `absolutePosition` → 行内 `abs: {x, y}`;
+单一纯色 fill 直写 `fills: '#RRGGBB'`(渐变/切图仍是 `fill_*` 引用,查 `globalVars`);
+删 Sketch 自动命名(`编组 2`/`矩形备份 3`/`Rectangle Copy` 等)和 TEXT 里等于文本内容的
+图层名——**节点没有 `name` = 没有语义名**,别去猜。出口计数不变量 + 逐节点语义比对,
+任何一条不满足即整体回退未蒸馏原文(stderr WARN),绝不出半成品;产物打标 `_meta.distilled: true`。
 要 v0.6 原形态加 `--raw`;旧文件离线蒸馏:`python3 scripts/distill.py <in> [<out>] [--check-only]`。
 
 两个消费警示:① 蒸馏 v0.5 旧文件会在 `_meta.distillWarnings` 提示坐标空间非
@@ -60,16 +64,34 @@ Cookie 默认存到 `~/.config/mockplus/cookie`,有效期约 30 天。401 时让
 1. **检查 cookie**:`mockplus cookie status`,未配置则引导用户 `cookie set`
 2. **若 URL 不确定是 page**(指向 group / 只有 APP_ID):`mockplus tree <APP_ID>` 浏览,从树里挑出具体 page id
 3. **拿 YAML 数据**:`mockplus data <URL> --out page.yaml`(默认 YAML)
+   - stderr 出现 `WARN: 输出约 N token` = 整页超单次读取预算,**不要硬读整份**,改两级取数:
+     `mockplus outline <URL>` 看区块(每区块一行:类型/名/id/画布坐标/子孙数/首段文本)→
+     挑要做的区块 `mockplus data <URL> --node <id1>,<id2> --out part.yaml`(可一次多个)
+   - 只做页面某一块时同样直接走 outline → `--node`,不必拉整页
 4. **扫 YAML 找切图**:看 `globalVars.styles` 里 `type: IMAGE` 的 fill,收集 `imageRef: <hash>`
 5. **按需下切图**:`mockplus download <URL> --nodes <hash1>,<hash2> --out ./assets`
-6. **进入下游**(代码生成 / 对照还原等)
+6. **进入下游**(代码生成 / 对照还原等),按下方「实现守则」
 
 要视觉对照?加 `--include-design` 或直接 `mockplus all <URL>` 一站式拿齐。
+
+## 实现守则(把数据翻成代码时)
+
+- **design.png 是视觉目标,不是素材**:只拿来对照,绝不放进代码当背景图/占位
+- **切图原样原位用**:每个 IMAGE fill 按 `imageRef` 下载后用在设计里对应的位置;不得用占位图、
+  第三方图标库或自绘 SVG 替代,不改图;SVG 保留根节点 width/height。接口/数据驱动的图片保持动态
+- **布局翻成项目原生写法**:`pos` 是相对父容器的设计快照,用来读间距、对齐、尺寸;落地优先
+  flex/grid(或 Flutter Row/Column 等),只有确实叠放/浮层的元素才用绝对定位。
+  `metadata.size.width` 是设计稿宽度,别写死成页面容器宽
+- **先复用再新建**:动手前查项目已有组件、设计 token、样式变量;INSTANCE 的 `componentId`
+  指向设计组件库,项目里有对应组件就用它;textStyle 是设计师命名,可映射到项目字体 token
+- **收尾自验**:只核对被要求的页面/区块;渲染截图与 design.png(区块用 `abs` 定位裁剪对照)
+  逐项比字号/颜色/间距/切图,修到一致再汇报;环境里有 UI 自检类 skill 时交给它执行
 
 ## 命令速查
 
 ```bash
-mockplus data <URL> [--out PATH] [--format yaml|json] [--coords relative|absolute] [--raw] [--stats] [--refresh]
+mockplus data <URL> [--node ID[,ID...]] [--out PATH] [--format yaml|json] [--coords relative|absolute] [--raw] [--stats] [--refresh]
+mockplus outline <URL> [--depth N] [--refresh]                # 区块大纲(大页先看它)
 mockplus download <URL> [--nodes all|h1,h2] [--out DIR] [--include-design]
 mockplus all <URL> [<OUT_DIR>] [--coords relative|absolute]   # = data + download(all + design)
 mockplus tree <APP_ID> [--format text|json] [--refresh]
@@ -77,6 +99,7 @@ mockplus cookie {set|test|status|clear|path}
 ```
 
 > Mockplus API 物理约束:只能按**整页(page)** 拉数据。Group/sub-group 没有节点级 API,所以 `data` 只接受 page URL,group 浏览靠 `tree`。
+> `outline` / `--node` 是在本地整页结果上裁剪,不额外请求 API。`--node` 的 id 取自 outline 或蒸馏 YAML(≥8 位前缀即可),只在当前页有效。
 
 ## 输出 YAML 速览(`data` 产物)
 
@@ -92,21 +115,20 @@ metadata:
 
 nodes:
   - id: 2F11A218                       # v0.7:UUID 已截前 8 位(--raw 为完整 UUID)
-    name: Submit Bar                   # 吸底栏背景(重建后成为容器)
+    name: Submit Bar                   # 吸底栏背景(重建后成为容器);自动命名已删,无 name = 无语义名
     type: VECTOR                       # FRAME/TEXT/INSTANCE/RECTANGLE/ELLIPSE/VECTOR/IMAGE/SLICE/MASK
     pos: {x: 0, y: 718, w: 375, h: 48} # v0.7:layout 表已内联为行内 pos(--raw 为 layout: layout_000003)
-    absolutePosition: { x: 0, y: 718 } # 仅容器节点有:画布绝对锚点
+    abs: {x: 0, y: 718}                # 仅容器节点有:画布绝对锚点(--raw 为 absolutePosition 块)
+    fills: '#FFFFFF'                   # v0.8:纯色直写;fill_NNNNNN = 渐变/切图,查 globalVars
     children:
-      - id: 67C9DB5F
-        name: Submit Action
+      - id: 67C9DB5F                   # TEXT 图层名与文本相同时已删 name
         type: TEXT
         pos: {x: 266, y: 19, w: 80, h: 22}   # 真·相对父坐标(v0.6 语义不变)
-        fills: fill_000001             # 可选
-        text: "Submit Action"
         textStyle: Body/16px/Semibold/Center Style   # 设计师命名
+        text: "Submit Action"
 
 globalVars:
-  styles:                              # v0.7:仅剩 fill / textStyle(layout_* 已内联)
+  styles:                              # 蒸馏后只剩渐变/切图 fill、stroke、effect、textStyle
     fill_000003:                       # 切图填充
       - type: IMAGE
         imageRef: 2b417ea8...          # ← LLM 拿这个调 download(40 位哈希,蒸馏不动)
@@ -122,14 +144,15 @@ _meta:
     reparented: 21                     # 被重挂进视觉容器的节点数
     zFilter: 'on'                      # z 方向证据不足的页会自动置 off 并告警
   unhandledFields: []                  # Mockplus schema 升级时这里会列字段
+  scope:                               # 仅 --node 产物:所选子树 id + 整页节点数
+    nodes: [2F11A218]                  # 子树根的 pos 仍相对原父节点,abs 是画布锚点
 ```
 
 **关键设计:**
 - **包含树重建(v0.6)**:授权分组是硬边界,组内兄弟按几何包含嵌套(最小面积
   容器胜出);INSTANCE 内部结构冻结、不收养外来节点;任意叶子的画布绝对位置 =
-  最近容器 `absolutePosition` + 自身 rel,一次加法
-- 元素定位直接用 `locationRelativeToParent` 写 CSS(父容器 `position:relative`
-  + 子 `absolute`),不需要再做减法
+  最近容器 `abs` + 自身 `pos`,一次加法
+- `pos` 已是相对父坐标,读间距/对齐不需要再做减法;落地布局按「实现守则」翻成原生写法
 - Token 复用:相同 fill/layout/effect 自动去重,节点上只放引用(相对化后重复
   卡片的内部元素共享同一 layout token,重复模式直接可见)
 - 文字样式 key 用设计师命名(`sharedStyle.name`),保留语义
@@ -143,6 +166,8 @@ _meta:
 | `cookie 未配置` (exit 10) | `mockplus cookie set` |
 | `API code != 0` (exit 21) | cookie 过期 → `mockplus cookie set` 重配 |
 | `URL 指向 group,先用 tree 浏览` (exit 22) | URL 不是 page,先 `tree` 找正确 page id |
+| `--node ... 不存在 / 太短 / 匹配到 N 个` (exit 23) | 先 `mockplus outline <URL>` 取 id;给 ≥8 位,歧义时给完整 UUID |
+| stderr `WARN: 输出约 N token(>20000)` | 整页太大,走 `outline` → `data --node` 按区块拉(见工作流第 3 步) |
 | `_meta.unhandledFields` 非空 | Mockplus schema 升级了,反馈 issue |
 | `_meta.coordinateSpace` 是 `absolute-artboard` | 包含树重建被回退(看 `_meta.warnings`)或读到了 v0.5 旧文件/`--coords absolute` 产物 —— 此时 `locationRelativeToParent` 是画布绝对坐标 |
 | 切图下载失败 | CDN 临时不通,重跑 `download`(已存在的会跳过) |

@@ -147,6 +147,42 @@ mockplus data '<URL>' --stats --out /tmp/page.yaml
 
 ---
 
+## 例 6:大页两级取数(outline → --node)
+
+**Input(用户意图):**
+> "只把这个页面的'预警排行'卡片还原出来"
+> *(或:`mockplus data` 的 stderr 出现 `WARN: 输出约 40000 token(>20000)`)*
+
+**Step 1 — 看区块大纲:**
+```bash
+mockplus outline '<URL>' --depth 2
+```
+
+**Output(stdout):**
+```
+# 页面: Sample Page (<PAGE_ID>)  画布 375x1400  节点 240  整页 YAML 约 16000 token
+# 坐标 = 画布绝对坐标(对照 design.png);同级按位置从上到下排;n = 子孙节点数;text = 子树最靠上的文本
+# 下钻: mockplus data <APP_ID>:<PAGE_ID> --node <id>[,<id>...]
+[INSTANCE] "Nav/White" #AB12CD01 @0,0 375x64 n=26 text="Sample Title"
+  [FRAME] #AB12CD02 @0,0 375x64 n=25 text="Sample Title"
+[FRAME] #AB12CD03 @12,100 351x442 n=54 text="Summary"
+[FRAME] #AB12CD04 @0,554 375x867 n=160 text="Trend"
+  [FRAME] #AB12CD05 @0,818 375x603 n=124 text="Warning Rank"
+    [VECTOR] #AB12CD06 @12,818 351x555 n=120 text="Warning Rank"
+```
+
+没有 `"名称"` 的行 = 图层是自动命名(编组/矩形…),靠 `text` 和坐标对照 design.png 辨认区块。
+
+**Step 2 — 只拉目标区块(可一次多个):**
+```bash
+mockplus data '<URL>' --node AB12CD06 --out rank-card.yaml
+```
+
+产物结构与整页相同,但只含该子树 + 它实际引用的样式/组件;子树根带 `abs`(画布绝对锚点),
+`_meta.scope.nodes` 记录所选 id。
+
+---
+
 ## 组合:典型还原 UI 工作流
 
 **Input(用户意图):**

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import List
 
 import client
+import scope
 import transform as _transform
 
 
@@ -136,24 +137,36 @@ def action_tree(args) -> int:
 # ============================================================
 
 
-def action_data(args) -> int:
-    app_id, target_id = client.parse_url_or_short(args.url)
-    kind = client.resolve_target_kind(app_id, target_id, refresh=args.refresh)
+def _load_page(url: str, refresh: bool, coords: str):
+    """URL → (rc, (app_id, target_id, result))。rc != 0 时错误已打到 stderr。"""
+    app_id, target_id = client.parse_url_or_short(url)
+    kind = client.resolve_target_kind(app_id, target_id, refresh=refresh)
     if kind == "group":
         print(f"ERR: URL 指向 group,先用 `mockplus tree {app_id}` 浏览找到具体 page id",
               file=sys.stderr)
-        return 22
+        return 22, None
     if kind != "page":
         print(f"ERR: TARGET_ID={target_id} 不是 page(kind={kind})", file=sys.stderr)
-        return 22
+        return 22, None
 
-    idx = client.fetch_index(app_id, refresh=args.refresh)
+    idx = client.fetch_index(app_id, refresh=refresh)
     pages, _ = client.flatten_pages(idx)
     page_meta = next(p for p in pages if p["id"] == target_id)
 
-    data = client.get_page_data_cached(app_id, page_meta, refresh=args.refresh)
-    result = _transform.transform(data, page_meta, app_id,
-                                  coords=getattr(args, "coords", "relative"))
+    data = client.get_page_data_cached(app_id, page_meta, refresh=refresh)
+    result = _transform.transform(data, page_meta, app_id, coords=coords)
+    return 0, (app_id, target_id, result)
+
+
+def _parse_node_arg(value) -> List[str]:
+    return [x for x in (value or "").split(",") if x.strip()]
+
+
+def action_data(args) -> int:
+    rc, ctx = _load_page(args.url, args.refresh, getattr(args, "coords", "relative"))
+    if rc != 0:
+        return rc
+    _app_id, _target_id, result = ctx
 
     # 校验:断言关键字段(替代砍掉的 _schema.py)
     try:
@@ -164,14 +177,28 @@ def action_data(args) -> int:
         print(f"ERR: transform 输出校验失败: {e}", file=sys.stderr)
         return 2
 
+    # v0.8:--node 只输出指定子树(整页已在本地,纯本地裁剪)
+    node_arg = getattr(args, "node", None)
+    if node_arg is not None:
+        try:
+            result, notes = scope.select(result, _parse_node_arg(node_arg))
+        except scope.ScopeError as e:
+            print(f"ERR: {e}", file=sys.stderr)
+            return 23
+        for note in notes:
+            print(f"NOTE: {note}", file=sys.stderr)
+
     # 输出(v0.7:YAML 默认经 distill 蒸馏;--raw 或蒸馏失败回退原文,绝不出半成品)
     out_text = _transform.serialize(result, fmt=args.format)
     if args.format == "yaml" and not getattr(args, "raw", False):
         try:
             import distill
             out_text, dstats = distill.apply_text(out_text)
+            names = dstats["names_dropped"]
             print(f"OK: distilled -{dstats['saved_pct']}% "
-                  f"(layouts {dstats['layouts_inlined']} inlined, uuid {dstats['uuids']})",
+                  f"(layouts {dstats['layouts_inlined']} inlined, uuid {dstats['uuids']}, "
+                  f"fills {dstats['fills_inlined']} inlined, "
+                  f"names -{names['auto'] + names['sameAsText']})",
                   file=sys.stderr)
             if dstats.get("legacy_coordinate_space"):
                 print("WARN: 输入坐标空间非 parent-relative——pos 为原语义(勿当相对父坐标),"
@@ -186,11 +213,40 @@ def action_data(args) -> int:
         if not out_text.endswith("\n"):
             sys.stdout.write("\n")
 
+    hint = scope.budget_hint(out_text, args.url, scoped=node_arg is not None)
+    if hint:
+        print(hint, file=sys.stderr)
+
     # --stats:额外输出统计到 stderr
     if args.stats:
         stats = _transform.compute_stats(result)
         print("---- stats ----", file=sys.stderr)
         print(json.dumps(stats, ensure_ascii=False, indent=2), file=sys.stderr)
+    return 0
+
+
+# ============================================================
+# outline
+# ============================================================
+
+def action_outline(args) -> int:
+    rc, ctx = _load_page(args.url, args.refresh, "relative")
+    if rc != 0:
+        return rc
+    app_id, target_id, result = ctx
+
+    # 整页 token 粗估 + id 口径与 `data` 蒸馏产物一致(蒸馏失败则 data 输出全 UUID)
+    import distill
+    raw = _transform.serialize(result, fmt="yaml")
+    try:
+        distilled, _ = distill.apply_text(raw)
+        id_map = distill.uuid_map(raw)
+        tokens = scope.estimate_tokens(distilled)
+    except distill.DistillError:
+        id_map, tokens = {}, scope.estimate_tokens(raw)
+
+    hint = f"mockplus data {app_id}:{target_id} --node <id>[,<id>...]"
+    sys.stdout.write(scope.render_outline(result, id_map, args.depth, tokens, hint))
     return 0
 
 

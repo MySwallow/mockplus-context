@@ -5,8 +5,11 @@
 ```
 skills/mockplus-context/scripts/
 ├── mockplus.py      # 入口:argparse + 子命令 dispatch（~77 行）
-├── cli.py           # 各 action 实现:data/download/all/tree/cookie（~280 行）
+├── cli.py           # 各 action 实现:data/outline/download/all/tree/cookie（~350 行）
 ├── transform.py     # sketch JSON → 结构化 dict(YAML/JSON 可序列化)（~600 行）
+├── relayout.py      # v0.6 包含树重建 + 相对坐标(transform 末端后处理 pass)
+├── distill.py       # v0.7/0.8 YAML 机械蒸馏 + 去噪(文本级变换 + 出口语义比对)
+├── scope.py         # v0.8 两级取数:outline 大纲 + --node 子树裁剪 + token 预算提示
 └── client.py        # API 客户端 + cookie + CDN 下载 + cache 管理（~360 行）
 ```
 
@@ -74,6 +77,7 @@ URL → client.parse_url_or_short → client.fetch_index → client.flatten_page
 15  cookie test API 拒绝
 21  index API code != 0
 22  TARGET_ID 误判(group / notfound)
+23  --node 节点不存在 / 前缀太短 / 前缀不唯一
 ```
 
 ## 测试策略

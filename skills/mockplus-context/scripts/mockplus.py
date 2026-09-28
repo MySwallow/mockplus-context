@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
-"""mockplus-context skill 主入口(v0.7.1)。
-   子命令: data / download / all / tree / cookie
+"""mockplus-context skill 主入口(v0.8.0)。
+   子命令: data / outline / download / all / tree / cookie
 """
 import argparse
 import os
 import sys
 
 
+def _nonneg_int(value: str) -> int:
+    try:
+        n = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"需要非负整数,收到 {value!r}")
+    if n < 0:
+        raise argparse.ArgumentTypeError(f"需要非负整数,收到 {value!r}")
+    return n
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="mockplus",
-        description="Mockplus 设计稿 → YAML/JSON + 切图(v0.7.1)",
+        description="Mockplus 设计稿 → YAML/JSON + 切图(v0.8.0)",
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -24,7 +34,16 @@ def build_parser() -> argparse.ArgumentParser:
                         "absolute=v0.5 画布绝对坐标(回滚通道)")
     g.add_argument("--raw", action="store_true",
                    help="输出未蒸馏原文(v0.6 形态;默认 YAML 经 distill 蒸馏 −~49%)")
+    g.add_argument("--node", default=None, metavar="ID[,ID...]",
+                   help="只输出指定节点子树(id 取自 outline 或蒸馏 YAML;≥8 位前缀即可)")
     g.add_argument("--stats", action="store_true", help="额外打印统计到 stderr")
+    g.add_argument("--refresh", action="store_true", help="跳过 cache 重拉")
+
+    # outline
+    g = sub.add_parser("outline", help="整页区块大纲(大页先看它,再 data --node 下钻)")
+    g.add_argument("url", help="完整 URL 或 <APP_ID>:<PAGE_ID>")
+    g.add_argument("--depth", type=_nonneg_int, default=None,
+                   help="只展开到第 N 层(0 = 仅顶层;默认全部容器)")
     g.add_argument("--refresh", action="store_true", help="跳过 cache 重拉")
 
     # download
@@ -96,6 +115,8 @@ def main(argv=None) -> int:
         return cli.action_tree(args)
     if args.cmd == "data":
         return cli.action_data(args)
+    if args.cmd == "outline":
+        return cli.action_outline(args)
     if args.cmd == "download":
         return cli.action_download(args)
     if args.cmd == "all":

@@ -35,7 +35,7 @@ AI → 你: 这是 src/views/Home.vue 完整组件 + 已下到 public/assets/ �
 
 1. **检查 cookie**(首次使用引导你 30 秒配一次,后续 30 天免)
 2. **若 URL 是 group 而非 page,先列树找 page id**
-3. **拉 YAML** — 含整页 metadata、节点树、token 表(fill/layout/textStyle)
+3. **拉 YAML** — 含整页 metadata、节点树、token 表(fill/layout/textStyle);大页先 `outline` 看区块,再 `data --node <id>` 按区块拉,不硬读超长文件
 4. **扫 YAML 收集需要的切图 hash,按需下载** — 只下 LLM 实际需要的,不下全部
 5. **基于 YAML 写代码**(Vue/React/Flutter/小程序均可,设计 token 直接映射成 CSS 变量 / Tailwind class)
 
@@ -98,6 +98,10 @@ _meta:
 - **文字样式 key 用设计师命名**(`sharedStyle.name`) — AI 写代码时可以直接复用作 CSS 变量名,语义不丢
 - **切图按需** — AI 看 YAML 才决定下哪些图,不会盲下整页几十张
 - **`_meta.unhandledFields` 探针** — Mockplus 升级 schema 时立刻可见,不静默丢字段
+- **两级取数(v0.8)** — `mockplus outline` 给整页区块大纲(token 约为整页 YAML 的 1/6~1/4),
+  `data --node <id>` 只拉选中区块;整页超出 AI 单次读取预算时 stderr 直接给出这两步命令
+- **去噪(v0.8)** — 默认产物删掉 `编组 2`/`矩形备份 3` 这类自动图层名和与文本重复的图层名,
+  纯色填充直接写在节点上,出口逐节点语义比对,任何偏差回退原文(`--raw` 可拿完整原形态)
 
 ## 一站式产物
 
@@ -159,8 +163,11 @@ mockplus-context/
         ├── SKILL.md                       # LLM 入口(触发条件 + 输出契约 + 失败处理)
         ├── scripts/                       # Python 实现(LLM 间接调用)
         │   ├── mockplus.py                # argparse 入口
-        │   ├── cli.py                     # 5 个 action 实现
+        │   ├── cli.py                     # 6 个 action 实现
         │   ├── transform.py               # sketch JSON → 结构化 YAML
+        │   ├── relayout.py                # 包含树重建 + 相对坐标
+        │   ├── distill.py                 # 蒸馏 + 去噪(省 token)
+        │   ├── scope.py                   # outline 大纲 + --node 子树裁剪
         │   └── client.py                  # API + cookie + CDN 下载
         └── references/                    # LLM 按需深读
             ├── examples.md                # 端到端调用样例

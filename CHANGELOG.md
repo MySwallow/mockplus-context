@@ -2,6 +2,48 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/),版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
+## v0.8.0 — 2026-09-28
+
+**两级取数 + 蒸馏去噪 + SKILL 实现守则。** 参考 Figma 官方 MCP(`get_metadata` 稀疏大纲 → `get_design_context` 按节点下钻)、
+Framelink v0.13(去冗余图层名)与 Anthropic《Writing effective tools for agents》(响应预算 + 可执行的错误提示)。
+
+### Added
+- `mockplus outline <URL> [--depth N]`:整页区块大纲,容器节点 + 顶层节点每个一行
+  (`[TYPE] "名" #id @x,y wxh n=子孙数 text="首段文本"`),画布绝对坐标、同级按阅读顺序排,
+  id 与蒸馏 YAML 一致;头部给整页 token 粗估和下钻命令。68 页真实语料上 token 约为整页 YAML 的 1/6(中位)~1/4(最大)
+- `mockplus data <URL> --node <id>[,<id>...]`:只输出指定子树 + 其实际引用的样式/组件;
+  子树根补画布绝对锚点;接受完整 UUID 或 ≥8 位唯一前缀(大小写不敏感);同时选中祖先与后代时跳过后代;
+  产物带 `_meta.scope`。纯本地裁剪,不增加 API 调用
+- 输出超预算提示:YAML 粗估 >20k token(Claude Code 单次工具响应默认上限 25k)时 stderr
+  `WARN` 给出 outline → `--node` 的具体命令,不静默截断
+- 退出码 `23`:`--node` 不存在 / 前缀太短 / 前缀不唯一(报错附下一步命令或候选 UUID)
+- SKILL.md 新增「实现守则」:design.png 只作视觉目标、切图原样原位用、布局翻成项目原生写法、
+  先复用项目组件/token、收尾自验
+
+### Changed
+- **蒸馏 v2(`_meta.distillVersion: 2`)追加三项去噪**,68 页真实语料比 v0.7 再 −12.2%(零回退):
+  - 容器 `absolutePosition` 三行块 → 行内 `abs: {x, y}`(6041 处)
+  - 单一纯色 fill 直写到节点 `fills: '#RRGGBB'`,删掉不再被引用的 `fill_*` 定义(3279 处;
+    占全部 fill 引用 93%);渐变/切图 fill 仍是 `fill_*` 引用,`imageRef` 不动
+  - 删 Sketch 自动命名(`编组 2`/`矩形备份 3`/`Rectangle Copy` 等,5753 处)与 TEXT 里等于
+    文本内容的图层名(1571 处)——节点无 `name` 即无语义名
+- 蒸馏出口在计数不变量之外新增**逐节点语义比对**(输出必须恰好等于按规则从输入推导的期望),
+  任何偏差整体回退未蒸馏原文。副作用:文本内容里夹带 UUID 的页面(v0.7 会把文本里的 UUID
+  一并截断)现在改为回退原文,不再改写文本
+- `cli.action_data` 页面解析抽成 `_load_page`,`data` / `outline` 共用
+
+### Migration
+- 读蒸馏产物的下游:`absolutePosition` → `abs`;`fills` 可能是颜色字面量(`#`/`rgba(` 开头)
+  或 `fill_*` 引用;`name` 可能缺失。`--raw` 输出与 v0.7 完全一致
+- v0.7 蒸馏过的旧文件会被拒绝二次蒸馏,重新 `mockplus data` 即可
+
+### Tests
+- `tests/test_distill.py` +34 用例:abs 行内化、纯色直写与渐变/切图保留、两类图层名删除、
+  自动命名正则正反例、5 夹具全量语义比对、误删图层名/文本内夹带 UUID 必须被拒
+- 新增 `tests/test_scope.py`(17 用例):子树裁剪(锚点、样式/组件过滤、前缀/大小写、祖先去重、
+  报错可执行、不修改入参、裁剪后可蒸馏)、outline(阅读顺序、自动命名隐藏、短 id、深度限制)、
+  token 预算提示、CLI 离线端到端(outline / `--node` / exit 23)
+
 ## v0.7.1 — 2026-09-11
 
 **Windows 乱码修复:所有文件读写与 stdout/stderr 固定 UTF-8,不再跟随系统 locale。**

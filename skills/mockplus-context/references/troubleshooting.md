@@ -66,6 +66,31 @@ mockplus tree <APP_ID> --format json | jq -r '.. | objects | select(.kind=="page
 mockplus data '<URL>'   # 注意:必须是 page URL,不是 group
 ```
 
+### `ERR: --node '...' 在本页不存在 / 太短 / 匹配到 N 个节点`
+
+`exit 23`。`--node` 的 id 只在当前页有效,取自 `outline` 或蒸馏 YAML:
+
+```bash
+mockplus outline '<URL>'                       # 每个区块一行,#后面就是 id
+mockplus data '<URL>' --node AB12CD06,AB12CD07 # ≥8 位前缀即可,大小写不敏感
+```
+
+- **太短**:至少给 8 位
+- **匹配到 N 个**:两个 UUID 前 8 位相同,改给完整 UUID(报错里列了候选)
+- 同时选了祖先和它的后代:后代会被跳过(stderr `NOTE`),不是错误
+
+### stderr:`WARN: 输出约 N token(>20000),单次读取可能被截断`
+
+不是错误(exit 0),是提醒:整页 YAML 超过 AI 单次读取预算(Claude Code 单次工具响应默认上限 25k token),
+硬读会被截断或只看到一部分。改两级取数:
+
+```bash
+mockplus outline '<URL>'                         # 先看区块结构(token 约为整页的 1/6~1/4)
+mockplus data '<URL>' --node <id> --out part.yaml  # 再按区块拉
+```
+
+带 `--node` 仍超预算 → 从 outline 里挑更小的子区块。token 数是粗估(中文 1 字 1 token,其余 3.2 字符 1 token)。
+
 ### `ERR: API code != 0`
 
 `exit 21`。`_index.json` 拉不到,常见原因:
